@@ -483,6 +483,7 @@ async function saveClient(event) {
     await api(id ? `/api/clients/${id}` : "/api/clients", {
       method: id ? "PATCH" : "POST",
       body: payload,
+      authRedirect: false,
     });
     els.clientDialog.close();
     notify("Cliente guardado.");
@@ -1015,7 +1016,7 @@ function toggleTheme() {
 async function api(url, options = {}) {
   const response = await fetch(url, { credentials: "include", ...options });
   if (!response.ok) {
-    if (response.status === 401 && !options.authOptional) {
+    if (response.status === 401 && !options.authOptional && options.authRedirect !== false) {
       els.app.hidden = true;
       els.loginView.hidden = false;
     }

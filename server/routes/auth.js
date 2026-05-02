@@ -22,10 +22,7 @@ authRouter.post("/guest-login", async (req, res) => {
     { new: true, upsert: true }
   );
 
-  req.login(user, (error) => {
-    if (error) return res.status(500).json({ message: "No se pudo iniciar sesion como invitado." });
-    res.json({ user: serializeUser(user) });
-  });
+  finishLogin(req, res, user, "No se pudo iniciar sesion como invitado.");
 });
 
 authRouter.post("/native-login", async (req, res) => {
@@ -44,10 +41,7 @@ authRouter.post("/native-login", async (req, res) => {
   user.lastLoginAt = new Date();
   await user.save();
 
-  req.login(user, (error) => {
-    if (error) return res.status(500).json({ message: "No se pudo iniciar sesion." });
-    res.json({ user: serializeUser(user) });
-  });
+  finishLogin(req, res, user, "No se pudo iniciar sesion.");
 });
 
 authRouter.get("/me", (req, res) => {
@@ -208,6 +202,16 @@ function serializeUser(user) {
     status: user.status || "active",
     authProvider: user.authProvider,
   };
+}
+
+function finishLogin(req, res, user, message) {
+  req.login(user, (error) => {
+    if (error) return res.status(500).json({ message });
+    req.session.save((saveError) => {
+      if (saveError) return res.status(500).json({ message });
+      res.json({ user: serializeUser(user) });
+    });
+  });
 }
 
 function hashPassword(password) {
