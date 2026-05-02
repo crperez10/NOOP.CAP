@@ -48,6 +48,13 @@ export default async function handler(req, res) {
     return app(req, res);
   } catch (error) {
     appPromise = undefined;
-    throw error;
+    const message = error?.message || "Error interno al iniciar la API.";
+    res.statusCode = error?.status || 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(JSON.stringify({
+      ok: false,
+      message,
+      code: error?.code || error?.codeName || "API_STARTUP_ERROR",
+    }));
   }
 }

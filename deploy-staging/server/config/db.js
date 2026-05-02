@@ -23,8 +23,7 @@ export async function connectDatabase() {
       throw new Error(
         [
           "MongoDB is not reachable.",
-          `Tried: ${uri}`,
-          "Start MongoDB locally, run docker compose up -d, or set MONGODB_URI to a MongoDB Atlas connection string.",
+          "Check that MONGODB_URI is a valid MongoDB Atlas connection string and that Network Access allows Vercel.",
         ].join(" ")
       );
     }
