@@ -32,21 +32,31 @@ itemsRouter.get("/", async (req, res) => {
 });
 
 itemsRouter.post("/", requireRole("admin"), upload.array("attachments"), async (req, res) => {
-  const item = await Item.create({
-    client: req.body.client,
-    subject: req.body.subject,
-    date: req.body.date,
-    importance: req.body.importance,
-    importanceRank: toImportanceRank(req.body.importance),
-    category: req.body.category,
-    subcategory: req.body.subcategory,
-    description: req.body.description,
-    attachments: await filesToAttachments(req.files),
-    createdBy: req.user._id,
-  });
+  const clientIds = itemClientIds(req.body);
+  if (!clientIds.length) return res.status(400).json({ message: "Selecciona al menos un cliente." });
 
-  await item.populate("createdBy", "name email avatar role");
-  res.status(201).json({ item: serializeItem(item) });
+  const attachments = await filesToAttachments(req.files);
+  const items = await Item.create(
+    clientIds.map((client) => ({
+      client,
+      subject: req.body.subject,
+      date: req.body.date,
+      importance: req.body.importance,
+      importanceRank: toImportanceRank(req.body.importance),
+      category: req.body.category,
+      subcategory: req.body.subcategory,
+      description: req.body.description,
+      attachments,
+      createdBy: req.user._id,
+    }))
+  );
+
+  const populatedItems = await Item.find({ _id: { $in: items.map((item) => item._id) } }).populate("createdBy", "name email avatar role");
+  res.status(201).json({
+    item: serializeItem(populatedItems[0]),
+    items: populatedItems.map(serializeItem),
+    count: populatedItems.length,
+  });
 });
 
 itemsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), async (req, res) => {
@@ -145,6 +155,27 @@ function toList(value) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function itemClientIds(body) {
+  const rawClients = body.clients || body.client;
+  let clients = [];
+
+  if (rawClients == null) {
+    clients = [];
+  } else if (Array.isArray(rawClients)) {
+    clients = rawClients;
+  } else if (typeof rawClients === "string" && rawClients.trim().startsWith("[")) {
+    try {
+      clients = JSON.parse(rawClients);
+    } catch {
+      clients = [body.client];
+    }
+  } else {
+    clients = toList(rawClients);
+  }
+
+  return [...new Set(clients.map((client) => String(client).trim()).filter(Boolean))];
 }
 
 function exactRegex(value) {

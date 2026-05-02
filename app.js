@@ -72,6 +72,7 @@ const els = {
   itemDialogTitle: document.querySelector("#item-dialog-title"),
   itemId: document.querySelector("#item-id"),
   itemClient: document.querySelector("#item-client"),
+  itemClientList: document.querySelector("#item-client-list"),
   itemSubject: document.querySelector("#item-subject"),
   itemDate: document.querySelector("#item-date"),
   itemImportance: document.querySelector("#item-importance"),
@@ -585,7 +586,7 @@ function openItemDialog(item = null) {
   state.files = [];
   els.itemDialogTitle.textContent = item ? "Editar registro" : "Nuevo registro";
   els.itemId.value = item?.id || "";
-  els.itemClient.value = item?.client || state.selectedClient || state.clients[0]?.id || "";
+  setSelectedItemClients(item ? [item.client] : [state.selectedClient || state.clients[0]?.id].filter(Boolean));
   els.itemSubject.value = item?.subject || "";
   els.itemDate.value = item?.date ? item.date.slice(0, 10) : new Date().toISOString().slice(0, 10);
   els.itemImportance.value = item?.importance || "media";
@@ -602,7 +603,17 @@ async function saveItem(event) {
   if (!canModifyData()) return;
   const id = els.itemId.value;
   const formData = new FormData();
-  formData.set("client", els.itemClient.value);
+  const selectedClients = getSelectedItemClients();
+  if (!selectedClients.length) {
+    notify("Selecciona al menos un cliente.");
+    return;
+  }
+  if (id && selectedClients.length > 1) {
+    notify("Al editar, selecciona un solo cliente.");
+    return;
+  }
+  formData.set("client", selectedClients[0]);
+  if (!id) formData.set("clients", JSON.stringify(selectedClients));
   formData.set("subject", els.itemSubject.value);
   formData.set("date", els.itemDate.value);
   formData.set("importance", els.itemImportance.value);
@@ -617,7 +628,7 @@ async function saveItem(event) {
   });
 
   els.itemDialog.close();
-  notify("Registro guardado.");
+  notify(selectedClients.length > 1 && !id ? "Registros guardados." : "Registro guardado.");
   await refreshWorkspaceData();
 }
 
@@ -750,6 +761,30 @@ function syncClientSelect() {
   els.itemClient.innerHTML = state.clients
     .map((client) => `<option value="${client.id}">${escapeHtml(client.name)}</option>`)
     .join("");
+  els.itemClientList.innerHTML = state.clients
+    .map(
+      (client) => `
+        <label class="client-check">
+          <input type="checkbox" name="item-client-check" value="${client.id}" />
+          <span class="client-label"><i style="background:${escapeHtml(client.color || "#94a3b8")}"></i>${escapeHtml(client.name)}</span>
+        </label>
+      `
+    )
+    .join("");
+}
+
+function getSelectedItemClients() {
+  return [...els.itemClientList.querySelectorAll("input:checked")].map((input) => input.value);
+}
+
+function setSelectedItemClients(clientIds) {
+  const selected = new Set(clientIds.filter(Boolean).map(String));
+  els.itemClientList.querySelectorAll("input").forEach((input) => {
+    input.checked = selected.has(input.value);
+  });
+  [...els.itemClient.options].forEach((option) => {
+    option.selected = selected.has(option.value);
+  });
 }
 
 function setFiles(files) {

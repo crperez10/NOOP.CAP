@@ -1225,6 +1225,50 @@ tbody tr:last-child td {
   font-size: 0.88rem;
 }
 
+.client-multi-field {
+  display: grid;
+  gap: 10px;
+}
+
+.field-label {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.client-multi-field small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.client-multi-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 178px;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.client-check {
+  display: flex !important;
+  align-items: center;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+}
+
+.client-check input {
+  width: auto;
+  flex: 0 0 auto;
+}
+
 .wide-field {
   grid-column: 1 / -1;
 }
@@ -1506,6 +1550,7 @@ tbody tr:last-child td {
   .form-grid,
   .client-form-grid,
   .item-form-grid,
+  .client-multi-list,
   .settings-form-grid,
   .inline-create-form,
   .native-login-form,

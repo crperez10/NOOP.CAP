@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/contrast.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/styles.css?v=20260502-detail-modal" />
+    <link rel="stylesheet" href="/styles.css?v=20260502-multi-client-items" />
     <title>CP Workspace</title>
   </head>
   <body>
@@ -190,7 +190,12 @@
       <section class="item-form-section">
         <h4>Datos principales</h4>
         <div class="item-form-grid">
-          <label>Cliente<select id="item-client" required></select></label>
+          <div class="client-multi-field wide-field">
+            <span class="field-label">Clientes vinculados</span>
+            <div id="item-client-list" class="client-multi-list"></div>
+            <select id="item-client" multiple hidden></select>
+            <small>Marca uno o varios clientes cuando el registro aplique bajo la misma norma.</small>
+          </div>
           <label>Asunto<input id="item-subject" placeholder="Asunto" required /></label>
           <label>Fecha<input id="item-date" type="date" required /></label>
           <label>Importancia<select id="item-importance"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select></label>
@@ -329,6 +334,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260502-detail-modal" defer></script>
+    <script src="/app.js?v=20260502-multi-client-items" defer></script>
   </body>
 </html>
