@@ -639,6 +639,7 @@ body.light .icon-button.lamp-button img {
   align-items: center;
   gap: 8px;
   min-height: 36px;
+  margin-bottom: 8px;
 }
 
 .records-toolbar .secondary-button {
@@ -920,18 +921,18 @@ body.light .danger-button {
 .table-panel {
   overflow-x: auto;
   align-self: start;
-  padding: 14px 16px;
+  padding: 10px 12px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 900px;
+  min-width: 760px;
 }
 
 th,
 td {
-  padding: 10px 8px;
+  padding: 9px 7px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: middle;
