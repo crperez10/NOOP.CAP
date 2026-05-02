@@ -430,7 +430,8 @@ function bindItemActions() {
 function openClientDialog(client = null, options = {}) {
   const readonly = Boolean(options.readonly);
   state.clientFiles = [];
-  els.clientForm.querySelector("h3").textContent = readonly ? "Datos del cliente" : "Cliente";
+  const clientFormTitle = els.clientForm.querySelector("h3");
+  if (clientFormTitle) clientFormTitle.textContent = readonly ? "Datos del cliente" : "Cliente";
   els.clientId.value = client?.id || "";
   els.clientName.value = client?.name || "";
   els.clientIndustry.value = client?.industry || "";
@@ -459,32 +460,36 @@ function setClientFormReadonly(readonly) {
 async function saveClient(event) {
   event.preventDefault();
   if (!canModifyData()) return;
-  const id = els.clientId.value;
-  const contacts = [
-    {
-      name: els.clientContactName.value,
-      role: els.clientContactRole.value,
-      email: els.clientContactEmail.value,
-      phone: els.clientContactPhone.value,
-    },
-  ];
-  const payload = new FormData();
-  payload.set("name", els.clientName.value);
-  payload.set("industry", els.clientIndustry.value);
-  payload.set("address", els.clientAddress.value);
-  payload.set("contractType", els.clientContractType.value);
-  payload.set("contacts", JSON.stringify(contacts));
-  payload.set("color", els.clientColor.value);
-  payload.set("notes", els.clientNotes.value);
-  state.clientFiles.forEach((file) => payload.append("attachments", file));
+  try {
+    const id = els.clientId.value;
+    const contacts = [
+      {
+        name: els.clientContactName.value,
+        role: els.clientContactRole.value,
+        email: els.clientContactEmail.value,
+        phone: els.clientContactPhone.value,
+      },
+    ];
+    const payload = new FormData();
+    payload.set("name", els.clientName.value);
+    payload.set("industry", els.clientIndustry.value);
+    payload.set("address", els.clientAddress.value);
+    payload.set("contractType", els.clientContractType.value);
+    payload.set("contacts", JSON.stringify(contacts));
+    payload.set("color", els.clientColor.value);
+    payload.set("notes", els.clientNotes.value);
+    state.clientFiles.forEach((file) => payload.append("attachments", file));
 
-  await api(id ? `/api/clients/${id}` : "/api/clients", {
-    method: id ? "PATCH" : "POST",
-    body: payload,
-  });
-  els.clientDialog.close();
-  notify("Cliente guardado.");
-  await loadClients();
+    await api(id ? `/api/clients/${id}` : "/api/clients", {
+      method: id ? "PATCH" : "POST",
+      body: payload,
+    });
+    els.clientDialog.close();
+    notify("Cliente guardado.");
+    await loadClients();
+  } catch (error) {
+    notify(error.message);
+  }
 }
 
 async function deleteActiveClient() {
