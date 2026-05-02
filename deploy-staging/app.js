@@ -326,7 +326,6 @@ function syncPageHeading() {
 function renderItems(total = state.items.length) {
   els.resultCount.textContent = `${total} ${total === 1 ? "registro" : "registros"}`;
   els.loadMoreBtn.hidden = !state.hasMore;
-  renderClients();
 
   if (!state.items.length) {
     els.cardsView.innerHTML = `<article class="record-card"><h3>No hay registros</h3><p class="muted">Crea el primer item o ajusta los filtros.</p></article>`;

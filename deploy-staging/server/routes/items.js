@@ -18,6 +18,7 @@ itemsRouter.get("/", async (req, res) => {
     Item.find(query)
       .populate("createdBy", "name email avatar role")
       .sort(sort)
+      .collation({ locale: "es", strength: 1 })
       .skip((page - 1) * limit)
       .limit(limit),
     Item.countDocuments(query),

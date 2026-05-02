@@ -52,9 +52,10 @@ authRouter.get("/me", (req, res) => {
 });
 
 authRouter.post("/logout", (req, res, next) => {
-  req.logout((error) => {
+  req.session.destroy((error) => {
     if (error) return next(error);
-    req.session.destroy(() => res.json({ ok: true }));
+    res.clearCookie("connect.sid");
+    res.json({ ok: true });
   });
 });
 
@@ -205,12 +206,10 @@ function serializeUser(user) {
 }
 
 function finishLogin(req, res, user, message) {
-  req.login(user, (error) => {
+  req.session.userId = user.id;
+  req.session.save((error) => {
     if (error) return res.status(500).json({ message });
-    req.session.save((saveError) => {
-      if (saveError) return res.status(500).json({ message });
-      res.json({ user: serializeUser(user) });
-    });
+    res.json({ user: serializeUser(user) });
   });
 }
 

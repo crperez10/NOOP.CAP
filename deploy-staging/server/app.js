@@ -3,11 +3,9 @@ import crypto from "crypto";
 import express from "express";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import passport from "passport";
 import path from "path";
 import { fileURLToPath } from "url";
 import { connectDatabase } from "./config/db.js";
-import { configurePassport } from "./config/passport.js";
 import { authRouter } from "./routes/auth.js";
 import { clientsRouter } from "./routes/clients.js";
 import { itemsRouter } from "./routes/items.js";
@@ -29,10 +27,8 @@ export function createApp() {
 
 async function buildApp() {
   await connectDatabase();
-  await cleanupLegacyGoogleAuth();
   await seedRequestedAdmin();
   await seedStarterClients();
-  configurePassport();
 
   const app = express();
   app.set("trust proxy", 1);
@@ -62,8 +58,7 @@ async function buildApp() {
       },
     })
   );
-  app.use(passport.initialize());
-  app.use(passport.session());
+  app.use(loadSessionUser);
 
   app.use(express.static(publicDir));
 
@@ -86,23 +81,6 @@ async function buildApp() {
   return app;
 }
 
-async function cleanupLegacyGoogleAuth() {
-  try {
-    await User.collection.dropIndex("googleId_1");
-  } catch (error) {
-    const expectedMissingState =
-      ["IndexNotFound", "NamespaceNotFound"].includes(error?.codeName) ||
-      [26, 27].includes(error?.code);
-
-    if (!expectedMissingState) throw error;
-  }
-
-  await User.collection.updateMany(
-    { googleId: { $exists: true } },
-    { $unset: { googleId: "" } }
-  );
-}
-
 async function seedRequestedAdmin() {
   const email = process.env.ADMIN_SEED_EMAIL;
   const password = process.env.ADMIN_SEED_PASSWORD;
@@ -123,6 +101,21 @@ async function seedRequestedAdmin() {
     },
     { new: true, upsert: true, runValidators: true }
   );
+}
+
+async function loadSessionUser(req, _res, next) {
+  try {
+    if (!req.session?.userId) {
+      req.user = null;
+      return next();
+    }
+
+    req.user = await User.findById(req.session.userId);
+    if (!req.user) delete req.session.userId;
+    next();
+  } catch (error) {
+    next(error);
+  }
 }
 
 async function seedStarterClients() {
