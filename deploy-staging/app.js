@@ -488,6 +488,7 @@ async function saveClient(event) {
     els.clientDialog.close();
     notify("Cliente guardado.");
     await loadClients();
+    await loadItems(true);
   } catch (error) {
     notify(error.message);
   }
@@ -501,7 +502,8 @@ async function deleteActiveClient() {
   await api(`/api/clients/${client.id}`, { method: "DELETE" });
   state.selectedClient = "";
   notify("Cliente eliminado.");
-  await Promise.all([loadClients(), loadItems(true)]);
+  await loadClients();
+  await loadItems(true);
 }
 
 function openClientsAdminDialog() {
@@ -602,7 +604,8 @@ async function saveItem(event) {
 
   els.itemDialog.close();
   notify("Registro guardado.");
-  await Promise.all([loadClients(), loadItems(true)]);
+  await loadClients();
+  await loadItems(true);
 }
 
 async function deleteItem(id) {
