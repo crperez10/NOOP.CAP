@@ -267,7 +267,7 @@ function renderClients() {
   const active = state.clients.find((client) => client.id === state.selectedClient);
   renderClientDetail(active);
   syncPageHeading();
-  renderClientsAdminList();
+  if (els.clientsAdminDialog.open) renderClientsAdminList();
 }
 
 function sortClientsByName(clients = []) {
@@ -546,7 +546,6 @@ function renderClientsAdminList() {
                 <small>${escapeHtml(client.address || "Sin direccion")}</small>
               </div>
               <div class="admin-row-actions">
-                <button class="ghost-button" type="button" data-client-select="${client.id}">Ver</button>
                 ${
                   canModifyData()
                     ? `<button class="secondary-button" type="button" data-client-edit="${client.id}">Modificar</button>`
@@ -562,15 +561,8 @@ function renderClientsAdminList() {
 }
 
 async function handleClientsAdminClick(event) {
-  const selectId = event.target.dataset.clientSelect;
   const editId = event.target.dataset.clientEdit;
   const deleteId = event.target.dataset.clientDelete;
-
-  if (selectId) {
-    state.selectedClient = selectId;
-    els.clientsAdminDialog.close();
-    await loadItems(true);
-  }
 
   if (editId && canModifyData()) {
     openClientDialog(state.clients.find((client) => client.id === editId));

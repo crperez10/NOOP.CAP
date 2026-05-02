@@ -1117,7 +1117,11 @@ dialog {
 
 dialog::backdrop {
   background: rgba(0, 0, 0, 0.62);
-  backdrop-filter: blur(8px);
+}
+
+dialog .form-card {
+  backdrop-filter: none;
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.34);
 }
 
 .form-card {
@@ -1152,6 +1156,18 @@ dialog::backdrop {
   max-height: min(84vh, 760px);
   overflow: auto;
   padding: 30px;
+}
+
+.client-form-card,
+.item-form-card,
+.settings-card,
+.account-card-modal,
+.user-edit-card,
+.item-detail-card,
+.filter-popover,
+.client-multi-list {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .dialog-heading {
@@ -1270,6 +1286,8 @@ dialog::backdrop {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.035);
+  content-visibility: auto;
+  contain-intrinsic-size: 260px;
 }
 
 .client-check {
@@ -1469,6 +1487,7 @@ dialog::backdrop {
   max-height: min(86vh, 820px);
   overflow: auto;
   padding: 28px;
+  overscroll-behavior: contain;
 }
 
 .clients-admin-heading {
@@ -1489,6 +1508,8 @@ dialog::backdrop {
 .clients-admin-list {
   display: grid;
   gap: 12px;
+  content-visibility: auto;
+  contain-intrinsic-size: 700px;
 }
 
 .admin-row {
@@ -1508,6 +1529,7 @@ dialog::backdrop {
   align-items: center;
   gap: 14px;
   padding: 16px;
+  contain: content;
 }
 
 .client-admin-dot {
