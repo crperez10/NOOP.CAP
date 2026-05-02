@@ -531,11 +531,12 @@ function renderClientsAdminList() {
     ? state.clients
         .map(
           (client) => `
-            <article class="admin-row">
-              <div>
+            <article class="admin-row client-admin-row">
+              <span class="client-dot client-admin-dot" style="background:${escapeHtml(client.color)}"></span>
+              <div class="client-admin-copy">
                 <strong>${escapeHtml(client.name)}</strong>
-                <div class="muted">${escapeHtml(client.industry || "Sin rubro")} / ${client.itemCount || 0} registros</div>
-                <div class="muted">${escapeHtml(client.address || "Sin direccion")}</div>
+                <span>${escapeHtml(client.industry || "Sin rubro")} / ${client.itemCount || 0} registros</span>
+                <small>${escapeHtml(client.address || "Sin direccion")}</small>
               </div>
               <div class="admin-row-actions">
                 <button class="ghost-button" type="button" data-client-select="${client.id}">Ver</button>

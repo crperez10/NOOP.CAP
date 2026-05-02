@@ -165,10 +165,18 @@
       </div>
     </form></dialog>
 
-    <dialog id="clients-admin-dialog"><section class="form-card">
-      <button id="admin-new-client-btn" class="primary-button" type="button">Agregar cliente</button>
-      <div id="clients-admin-list"></div>
-      <button class="secondary-button" type="button" data-close="clients-admin-dialog">Cerrar</button>
+    <dialog id="clients-admin-dialog"><section class="form-card clients-admin-card">
+      <header class="dialog-heading clients-admin-heading">
+        <div>
+          <p class="eyebrow">Clientes</p>
+          <h3>Administrar clientes</h3>
+        </div>
+        <button id="admin-new-client-btn" class="primary-button" type="button">Agregar cliente</button>
+      </header>
+      <div id="clients-admin-list" class="clients-admin-list"></div>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close="clients-admin-dialog">Cerrar</button>
+      </div>
     </section></dialog>
 
     <dialog id="item-dialog"><form id="item-form" class="form-card" method="dialog">
