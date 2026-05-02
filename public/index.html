@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CP Workspace</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="toast" class="toast" hidden></div>
+
+    <section id="login-view" class="login-view" hidden>
+      <div class="login-panel">
+        <h1>CP workspace</h1>
+        <form id="native-login-form" class="native-login-form">
+          <label>Email <input id="native-login-email" type="email" autocomplete="username" /></label>
+          <label>Password <input id="native-login-password" type="password" autocomplete="current-password" /></label>
+          <button class="ghost-button" type="submit">Ingresar</button>
+          <button id="guest-login-btn" class="secondary-button" type="button">Entrar como invitado</button>
+        </form>
+      </div>
+    </section>
+
+    <div id="app" class="app-shell" hidden>
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-title-row">
+            <button id="hamburger-btn" class="hamburger-button" type="button" aria-expanded="false" title="Menu">
+              <span></span><span></span><span></span>
+            </button>
+            <button id="theme-toggle" class="icon-button lamp-button" type="button" title="Cambiar tema">
+              <img src="/assets/contrast.svg" alt="" />
+            </button>
+          </div>
+          <nav id="hamburger-menu" class="hamburger-menu" hidden>
+            <button class="role-editor" type="button" data-menu-action="new-item">Nuevo registro</button>
+            <button class="role-admin" type="button" data-menu-action="clients">Clientes</button>
+            <button type="button" data-menu-action="account">Cuenta</button>
+            <button class="role-admin" type="button" data-menu-action="settings">Configuracion</button>
+            <button type="button" data-menu-action="logout">Cerrar sesion</button>
+          </nav>
+          <div id="user-summary" class="user-summary"></div>
+        </div>
+
+        <section class="side-section role-client-access" id="clients-sidebar-section">
+          <div class="section-title">
+            <span>Clientes</span>
+          </div>
+          <div class="client-search-field">
+            <span class="search-icon"></span>
+            <input id="client-search-input" type="search" placeholder="Buscar cliente" />
+          </div>
+          <div id="client-list" class="client-list"></div>
+        </section>
+
+      </aside>
+
+      <main class="workspace role-client-access" id="workspace">
+        <section id="client-detail-panel" class="client-detail-panel" hidden></section>
+
+        <section class="page-heading" id="page-heading">
+          <p class="eyebrow">Client Data</p>
+          <h1>CP Workspace =D</h1>
+        </section>
+
+        <section class="filters-panel">
+          <div class="search-field wide-search">
+            <span class="search-icon"></span>
+            <input id="keyword-filter" type="search" placeholder="Buscar por asunto, categoria o descripcion" />
+          </div>
+          <label class="date-filter">Desde <input id="from-filter" type="date" /></label>
+          <label class="date-filter">Hasta <input id="to-filter" type="date" /></label>
+          <div class="filter-menu-wrap">
+            <button id="filter-menu-btn" class="secondary-button" type="button" aria-expanded="false">Filtros</button>
+            <div id="filter-popover" class="filter-popover" hidden>
+              <div class="filter-section">
+                <strong>Importancia</strong>
+                <label><input type="checkbox" name="importance-filter" value="alta" /> Alta</label>
+                <label><input type="checkbox" name="importance-filter" value="media" /> Media</label>
+                <label><input type="checkbox" name="importance-filter" value="baja" /> Baja</label>
+              </div>
+              <div class="filter-section">
+                <strong>Categorias</strong>
+                <div id="category-options" class="checkbox-list"></div>
+              </div>
+              <div class="filter-section">
+                <strong>Subcategorias</strong>
+                <div id="subcategory-options" class="checkbox-list"></div>
+              </div>
+              <div class="filter-section">
+                <strong>Orden</strong>
+                <label><input type="radio" name="sort-filter" value="date" checked /> Fecha</label>
+                <label><input type="radio" name="sort-filter" value="importance" /> Importancia</label>
+              </div>
+              <button id="clear-filters-btn" class="ghost-button" type="button">Limpiar filtros</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="toolbar">
+          <div class="view-toggle">
+            <button id="table-view-btn" class="active" type="button">Tabla</button>
+            <button id="card-view-btn" type="button">Cards</button>
+          </div>
+          <strong id="result-count" class="result-count">0 registros</strong>
+          <span id="loader" class="loader" hidden>Cargando...</span>
+        </section>
+
+        <section id="cards-view" class="records-grid" hidden></section>
+
+        <section id="table-view" class="table-panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Asunto</th>
+                <th>Cliente</th>
+                <th>Categoria</th>
+                <th>Importancia</th>
+                <th>Fecha</th>
+                <th>Creador</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </section>
+
+        <button id="load-more-btn" class="load-more" type="button" hidden>Mostrar mas</button>
+      </main>
+    </div>
+
+    <dialog id="client-dialog" class="dialog">
+      <form id="client-form" class="form-card">
+        <h3>Cliente</h3>
+        <input id="client-id" type="hidden" />
+        <label>Nombre <input id="client-name" required /></label>
+        <label>Rubro <input id="client-industry" /></label>
+        <label>Direccion <input id="client-address" /></label>
+        <label>Tipo de contrato <input id="client-contract-type" /></label>
+        <div class="form-grid">
+          <label>Contacto principal <input id="client-contact-name" /></label>
+          <label>Cargo/area <input id="client-contact-role" /></label>
+          <label>Email de contacto <input id="client-contact-email" type="email" /></label>
+          <label>Telefono de contacto <input id="client-contact-phone" /></label>
+        </div>
+        <label>Color <input id="client-color" type="color" value="#6d5dfc" /></label>
+        <label>Notas <textarea id="client-notes" rows="3"></textarea></label>
+        <label>Documentos del cliente <input id="client-files" type="file" multiple accept="image/*,.txt,.doc,.docx,.xls,.xlsx,.pdf" /></label>
+        <div id="client-file-preview" class="file-preview"></div>
+        <div class="form-actions">
+          <button class="primary-button" type="submit">Guardar</button>
+          <button class="ghost-button" type="button" data-close="client-dialog">Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="clients-admin-dialog" class="dialog wide-dialog">
+      <div class="form-card">
+        <div class="dialog-header">
+          <h3>Clientes</h3>
+          <button class="ghost-button" type="button" data-close="clients-admin-dialog">Cerrar</button>
+        </div>
+        <div class="form-actions">
+          <button id="admin-new-client-btn" class="primary-button role-editor" type="button">Agregar cliente</button>
+        </div>
+        <div id="clients-admin-list" class="admin-list"></div>
+      </div>
+    </dialog>
+
+    <dialog id="item-dialog" class="dialog wide-dialog">
+      <form id="item-form" class="form-card">
+        <h3 id="item-dialog-title">Registro</h3>
+        <input id="item-id" type="hidden" />
+        <label>Cliente <select id="item-client" required></select></label>
+        <div class="form-grid">
+          <label>Asunto <input id="item-subject" required /></label>
+          <label>Fecha <input id="item-date" type="date" required /></label>
+          <label>
+            Importancia
+            <select id="item-importance">
+              <option value="alta">Alta</option>
+              <option value="media">Media</option>
+              <option value="baja">Baja</option>
+            </select>
+          </label>
+          <label>Categoria <input id="item-category" required /></label>
+          <label>Subcategoria <input id="item-subcategory" /></label>
+        </div>
+        <label>Descripcion <textarea id="item-description" rows="6"></textarea></label>
+        <div id="drop-zone" class="drop-zone">
+          <input id="item-files" type="file" multiple accept="image/*,.txt,.doc,.docx,.xls,.xlsx,.pdf" />
+          <strong>Arrastra archivos o haz clic para adjuntar</strong>
+          <span>Imagenes, TXT, Word, Excel o PDF hasta 12 MB cada uno.</span>
+        </div>
+        <div id="file-preview" class="file-preview"></div>
+        <div class="form-actions">
+          <button class="primary-button" type="submit">Guardar registro</button>
+          <button class="ghost-button" type="button" data-close="item-dialog">Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="users-dialog" class="dialog wide-dialog">
+      <div class="form-card">
+        <div class="dialog-header">
+          <h3>Configuracion</h3>
+          <button class="ghost-button" type="button" data-close="users-dialog">Cerrar</button>
+        </div>
+        <div class="settings-layout">
+          <nav id="settings-tabs" class="settings-tabs">
+            <button class="role-admin active" type="button" data-settings-tab="create-users">Crear usuarios</button>
+            <button class="role-admin" type="button" data-settings-tab="manage-users">Administrar usuarios</button>
+            <button type="button" data-settings-tab="password">Cambiar password</button>
+          </nav>
+          <section class="settings-panel">
+            <div id="settings-create-users" data-settings-panel="create-users">
+              <p class="muted">Crea usuarios web para acceder al sistema.</p>
+              <form id="user-create-form" class="inline-create-form user-create-form">
+                <label>Nombre <input id="user-name" placeholder="Nombre completo" required /></label>
+                <label>Email <input id="user-email" type="email" placeholder="correo@empresa.com" required /></label>
+                <label>Password inicial <input id="user-password" type="password" placeholder="Solo requerido para administrador" /></label>
+                <label>
+                  Perfil
+                  <select id="user-role">
+                    <option value="viewer">Invitado</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </label>
+                <button class="primary-button" type="submit">Crear usuario</button>
+              </form>
+            </div>
+            <div id="settings-manage-users" data-settings-panel="manage-users" hidden>
+              <p class="muted">Modifica datos, roles y passwords opcionales.</p>
+              <div id="users-list" class="users-list"></div>
+            </div>
+            <div id="settings-password" data-settings-panel="password" hidden>
+              <p class="muted">Actualiza tu password de acceso web.</p>
+              <form id="password-form" class="password-form">
+                <label>Password actual <input id="current-password" type="password" autocomplete="current-password" /></label>
+                <label>Nuevo password <input id="new-password" type="password" autocomplete="new-password" required /></label>
+                <button class="primary-button" type="submit">Cambiar password</button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="user-edit-dialog" class="dialog">
+      <form id="user-edit-form" class="form-card">
+        <div class="dialog-header">
+          <h3>Editar usuario</h3>
+          <button class="ghost-button" type="button" data-close="user-edit-dialog">Cerrar</button>
+        </div>
+        <input id="edit-user-id" type="hidden" />
+        <label>Nombre <input id="edit-user-name" required /></label>
+        <label>Email <input id="edit-user-email" type="email" required /></label>
+        <label>
+          Rol
+          <select id="edit-user-role">
+            <option value="viewer">Invitado</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </label>
+        <label>
+          Estado
+          <select id="edit-user-status">
+            <option value="active">Activo</option>
+            <option value="pending">Pendiente</option>
+          </select>
+        </label>
+        <label>Nuevo password opcional <input id="edit-user-password" type="password" /></label>
+        <div class="form-actions">
+          <button class="primary-button" type="submit">Guardar usuario</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="account-dialog" class="dialog">
+      <div class="form-card">
+        <div class="dialog-header">
+          <h3>Cuenta</h3>
+          <button class="ghost-button" type="button" data-close="account-dialog">Cerrar</button>
+        </div>
+        <form id="account-form" class="account-content">
+          <div id="account-content"></div>
+          <label>Foto de perfil <input id="account-avatar" type="file" accept="image/*" /></label>
+          <div id="account-avatar-preview" class="avatar-preview"></div>
+          <button class="primary-button" type="submit">Guardar perfil</button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog id="item-detail-dialog" class="dialog wide-dialog">
+      <div class="form-card">
+        <div class="dialog-header">
+          <h3>Detalle del registro</h3>
+          <button class="ghost-button" type="button" data-close="item-detail-dialog">Cerrar</button>
+        </div>
+        <div id="item-detail-content"></div>
+      </div>
+    </dialog>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
