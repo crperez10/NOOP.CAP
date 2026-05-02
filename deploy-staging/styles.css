@@ -1013,7 +1013,7 @@ tbody tr:last-child td {
   margin-bottom: 22px;
 }
 
-.detail-grid span {
+.detail-grid > span {
   display: grid;
   gap: 4px;
   padding: 10px;
@@ -1024,7 +1024,7 @@ tbody tr:last-child td {
 
 #item-detail-content {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 
 #item-detail-content h2 {
@@ -1037,6 +1037,38 @@ tbody tr:last-child td {
   color: var(--text);
   font-size: 0.78rem;
   text-transform: uppercase;
+}
+
+.item-detail-card {
+  width: min(760px, calc(100vw - 28px));
+  max-height: min(86vh, 800px);
+  overflow: auto;
+  padding: 30px;
+}
+
+.item-detail-card .detail-grid {
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.item-detail-card .detail-grid > span {
+  min-height: 76px;
+  padding: 13px;
+}
+
+.item-detail-card .client-label {
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.item-detail-card .chip {
+  justify-self: start;
+  margin-top: 2px;
+  font-style: normal;
+}
+
+.item-detail-card .detail-description {
+  padding: 18px;
 }
 
 .detail-description {
@@ -1486,7 +1518,8 @@ tbody tr:last-child td {
   .item-form-card,
   .settings-card,
   .account-card-modal,
-  .user-edit-card {
+  .user-edit-card,
+  .item-detail-card {
     width: min(100%, calc(100vw - 20px));
     max-height: 88vh;
     padding: 20px;

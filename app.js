@@ -996,9 +996,9 @@ function openItemDetail(item) {
   const attachments = item.attachments || [];
   els.itemDetailContent.innerHTML = `
     <div class="detail-grid">
-      <span><strong>Cliente</strong>${escapeHtml(client?.name || "-")}</span>
+      <span><strong>Cliente</strong>${clientLabel(client)}</span>
       <span><strong>Fecha</strong>${formatDate(item.date)}</span>
-      <span><strong>Importancia</strong>${labelImportance(item.importance)}</span>
+      <span><strong>Importancia</strong><em class="chip importance-${escapeHtml(item.importance)}">${labelImportance(item.importance)}</em></span>
       <span><strong>Categoria</strong>${escapeHtml(item.category)}</span>
       <span><strong>Subcategoria</strong>${escapeHtml(item.subcategory || "-")}</span>
       <span><strong>Creador</strong>${escapeHtml(item.createdBy?.name || "-")}</span>
