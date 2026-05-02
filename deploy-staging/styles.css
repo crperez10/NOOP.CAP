@@ -1031,6 +1031,13 @@ tbody tr:last-child td {
   padding: 30px;
 }
 
+.item-form-card {
+  width: min(860px, calc(100vw - 28px));
+  max-height: min(84vh, 780px);
+  overflow: auto;
+  padding: 30px;
+}
+
 .dialog-heading {
   display: flex;
   align-items: flex-start;
@@ -1046,7 +1053,13 @@ tbody tr:last-child td {
   font-size: 1.35rem;
 }
 
-.client-form-section {
+.dialog-heading h2 {
+  margin: 2px 0 0;
+  font-size: 1.45rem;
+}
+
+.client-form-section,
+.item-form-section {
   display: grid;
   gap: 16px;
   margin-bottom: 20px;
@@ -1056,7 +1069,8 @@ tbody tr:last-child td {
   background: rgba(255, 255, 255, 0.035);
 }
 
-.client-form-section h4 {
+.client-form-section h4,
+.item-form-section h4 {
   margin: 0;
   color: var(--text);
   font-size: 0.98rem;
@@ -1086,10 +1100,33 @@ tbody tr:last-child td {
   font-size: 0.88rem;
 }
 
-.client-form-grid {
+.client-form-grid,
+.item-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+}
+
+.item-form-card label {
+  margin-bottom: 0;
+}
+
+.item-form-card textarea {
+  min-height: 112px;
+}
+
+.item-form-card .drop-zone {
+  min-height: 112px;
+  margin: 0;
+}
+
+.item-form-card .drop-zone strong {
+  color: var(--text);
+}
+
+.item-form-card .drop-zone span {
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .wide-field {
@@ -1368,6 +1405,7 @@ tbody tr:last-child td {
   .filters-panel,
   .form-grid,
   .client-form-grid,
+  .item-form-grid,
   .inline-create-form,
   .native-login-form,
   .user-edit-row,
@@ -1375,7 +1413,8 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 
-  .client-form-card {
+  .client-form-card,
+  .item-form-card {
     width: min(100%, calc(100vw - 20px));
     max-height: 88vh;
     padding: 20px;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/contrast.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/styles.css?v=20260502-data-refresh" />
+    <link rel="stylesheet" href="/styles.css?v=20260502-item-modal" />
     <title>CP Workspace</title>
   </head>
   <body>
@@ -179,21 +179,47 @@
       </div>
     </section></dialog>
 
-    <dialog id="item-dialog"><form id="item-form" class="form-card" method="dialog">
-      <h2 id="item-dialog-title">Nuevo registro</h2>
+    <dialog id="item-dialog"><form id="item-form" class="form-card item-form-card" method="dialog">
+      <header class="dialog-heading">
+        <div>
+          <p class="eyebrow">Registros</p>
+          <h2 id="item-dialog-title">Nuevo registro</h2>
+        </div>
+      </header>
       <input id="item-id" type="hidden" />
-      <select id="item-client" required></select>
-      <input id="item-subject" placeholder="Asunto" required />
-      <input id="item-date" type="date" required />
-      <select id="item-importance"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select>
-      <input id="item-category" placeholder="Categoria" />
-      <input id="item-subcategory" placeholder="Subcategoria" />
-      <textarea id="item-description" placeholder="Descripcion"></textarea>
-      <div id="drop-zone" class="drop-zone">Soltar archivos</div>
-      <input id="item-files" type="file" multiple />
+      <section class="item-form-section">
+        <h4>Datos principales</h4>
+        <div class="item-form-grid">
+          <label>Cliente<select id="item-client" required></select></label>
+          <label>Asunto<input id="item-subject" placeholder="Asunto" required /></label>
+          <label>Fecha<input id="item-date" type="date" required /></label>
+          <label>Importancia<select id="item-importance"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select></label>
+        </div>
+      </section>
+      <section class="item-form-section">
+        <h4>Clasificacion</h4>
+        <div class="item-form-grid">
+          <label>Categoria<input id="item-category" placeholder="Categoria" /></label>
+          <label>Subcategoria<input id="item-subcategory" placeholder="Subcategoria" /></label>
+        </div>
+      </section>
+      <section class="item-form-section">
+        <h4>Descripcion</h4>
+        <label class="wide-field">Detalle<textarea id="item-description" placeholder="Descripcion"></textarea></label>
+      </section>
+      <section class="item-form-section">
+        <h4>Adjuntos</h4>
+        <div id="drop-zone" class="drop-zone">
+          <strong>Soltar archivos</strong>
+          <span>Imagenes, textos, Word o Excel.</span>
+        </div>
+        <label>Seleccionar archivos<input id="item-files" type="file" multiple /></label>
+      </section>
       <div id="file-preview" class="file-preview"></div>
-      <button class="primary-button" type="submit">Guardar registro</button>
-      <button class="secondary-button" type="button" data-close="item-dialog">Cerrar</button>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close="item-dialog">Cerrar</button>
+        <button class="primary-button" type="submit">Guardar registro</button>
+      </div>
     </form></dialog>
 
     <dialog id="users-dialog"><section class="form-card">
@@ -243,6 +269,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260502-data-refresh" defer></script>
+    <script src="/app.js?v=20260502-item-modal" defer></script>
   </body>
 </html>
