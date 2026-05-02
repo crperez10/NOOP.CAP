@@ -375,10 +375,10 @@ function itemRow(item) {
       <td><strong class="table-subject">${escapeHtml(item.subject)}</strong></td>
       <td>${clientLabel(client)}</td>
       <td>${escapeHtml(item.category)}<div class="muted">${escapeHtml(item.subcategory || "")}</div></td>
-      <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td>${formatDate(item.date)}</td>
+      <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td>${escapeHtml(item.createdBy?.name || "-")}</td>
-      <td>
+      <td class="table-actions">
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="ghost-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>

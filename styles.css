@@ -619,6 +619,9 @@ body.light .icon-button.lamp-button img {
 .workspace {
   min-width: 0;
   padding: 32px 32px 32px 26px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
 }
 
 .topbar,
@@ -629,7 +632,18 @@ body.light .icon-button.lamp-button img {
 .page-heading {
   border-radius: var(--radius);
   padding: 16px;
-  margin-bottom: 16px;
+}
+
+.records-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.records-toolbar .secondary-button {
+  min-height: 36px;
+  padding: 7px 12px;
 }
 
 .page-heading {
@@ -905,26 +919,41 @@ body.light .danger-button {
 
 .table-panel {
   overflow-x: auto;
+  align-self: start;
+  padding: 14px 16px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 820px;
+  min-width: 900px;
 }
 
 th,
 td {
-  padding: 13px 10px;
+  padding: 10px 8px;
   border-bottom: 1px solid var(--line);
   text-align: left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 th {
   color: var(--muted);
   font-size: 0.76rem;
   text-transform: uppercase;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table-actions {
+  white-space: nowrap;
+}
+
+.table-actions button {
+  min-height: 36px;
+  padding: 7px 11px;
 }
 
 .detail-grid {
