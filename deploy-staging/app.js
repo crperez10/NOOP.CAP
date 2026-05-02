@@ -805,8 +805,10 @@ function syncRoleUI() {
   document.querySelectorAll(".role-admin").forEach((el) => (el.hidden = role !== "admin"));
   document.querySelectorAll(".role-editor").forEach((el) => (el.hidden = !canModifyData()));
   document.querySelectorAll(".role-client-access").forEach((el) => (el.hidden = !state.user));
-  els.accountAvatar.closest("label").hidden = !canModifyData();
-  els.accountForm.querySelector("button[type='submit']").hidden = !canModifyData();
+  const avatarField = els.accountAvatar?.closest("label") || els.accountAvatar;
+  if (avatarField) avatarField.hidden = !canModifyData();
+  const accountSubmit = els.accountForm?.querySelector("button[type='submit']");
+  if (accountSubmit) accountSubmit.hidden = !canModifyData();
   els.userSummary.innerHTML = `
     <span class="avatar">${avatarMarkup(state.user)}</span>
     <span>
