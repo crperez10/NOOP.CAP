@@ -487,8 +487,7 @@ async function saveClient(event) {
     });
     els.clientDialog.close();
     notify("Cliente guardado.");
-    await loadClients();
-    await loadItems(true);
+    await refreshWorkspaceData();
   } catch (error) {
     notify(error.message);
   }
@@ -502,8 +501,7 @@ async function deleteActiveClient() {
   await api(`/api/clients/${client.id}`, { method: "DELETE" });
   state.selectedClient = "";
   notify("Cliente eliminado.");
-  await loadClients();
-  await loadItems(true);
+  await refreshWorkspaceData();
 }
 
 function openClientsAdminDialog() {
@@ -561,7 +559,7 @@ async function handleClientsAdminClick(event) {
     await api(`/api/clients/${deleteId}`, { method: "DELETE" });
     if (state.selectedClient === deleteId) state.selectedClient = "";
     notify("Cliente eliminado.");
-    await Promise.all([loadClients(), loadItems(true)]);
+    await refreshWorkspaceData();
   }
 }
 
@@ -604,8 +602,7 @@ async function saveItem(event) {
 
   els.itemDialog.close();
   notify("Registro guardado.");
-  await loadClients();
-  await loadItems(true);
+  await refreshWorkspaceData();
 }
 
 async function deleteItem(id) {
@@ -613,7 +610,7 @@ async function deleteItem(id) {
   if (!confirm("Eliminar este registro? Esta accion solo esta permitida para admins.")) return;
   await api(`/api/items/${id}`, { method: "DELETE" });
   notify("Registro eliminado.");
-  await Promise.all([loadClients(), loadItems(true)]);
+  await refreshWorkspaceData();
 }
 
 async function openUsersDialog() {
@@ -835,7 +832,18 @@ async function loadWorkspaceData() {
     return;
   }
 
-  await Promise.all([loadClients(), loadItems(true)]);
+  await refreshWorkspaceData();
+}
+
+async function refreshWorkspaceData() {
+  if (!hasClientAccess()) return;
+  await loadClients();
+  if (state.selectedClient && !state.clients.some((client) => client.id === state.selectedClient)) {
+    state.selectedClient = "";
+  }
+  await loadItems(true);
+  renderClients();
+  syncClientSelect();
 }
 
 function roleLabelFor(role) {

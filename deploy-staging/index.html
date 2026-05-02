@@ -10,10 +10,12 @@
   <body>
     <section id="login-view" class="login-view" hidden>
       <form id="native-login-form" class="login-card">
-        <p class="eyebrow">CP Workspace</p>
-        <h1>CP workspace</h1>
-        <input id="native-login-email" type="email" placeholder="Email" autocomplete="email" />
-        <input id="native-login-password" type="password" placeholder="Password" autocomplete="current-password" />
+        <div class="login-heading">
+          <p class="eyebrow">CP Workspace</p>
+          <h1>CP workspace</h1>
+        </div>
+        <label>Email<input id="native-login-email" type="email" placeholder="Email" autocomplete="email" /></label>
+        <label>Password<input id="native-login-password" type="password" placeholder="Password" autocomplete="current-password" /></label>
         <div class="login-actions">
           <button class="primary-button" type="submit">Ingresar</button>
           <button id="guest-login-btn" class="secondary-button" type="button">Entrar como invitado</button>
@@ -218,7 +220,7 @@
       <button class="secondary-button" type="button" data-close="item-detail-dialog">Cerrar</button>
     </section></dialog>
 
-    <div id="toast" class="toast"></div>
+    <div id="toast" class="toast" hidden></div>
     <script src="/app.js" defer></script>
   </body>
 </html>

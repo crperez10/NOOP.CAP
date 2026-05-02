@@ -103,6 +103,7 @@ body.light option {
 }
 
 .login-panel,
+.login-card,
 .form-card,
 .side-section,
 .topbar,
@@ -123,11 +124,43 @@ body.light option {
   border-radius: 12px;
 }
 
+.login-card {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 18px;
+  padding: 40px;
+  border-radius: 14px;
+}
+
+.login-heading {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.login-card h1,
 .login-panel h1 {
   margin: 0 0 24px;
-  font-size: clamp(2.15rem, 5vw, 4rem);
+  font-size: clamp(2.15rem, 5vw, 3.45rem);
   line-height: 1.04;
   letter-spacing: 0;
+}
+
+.login-card h1 {
+  margin: 0;
+}
+
+.login-card label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.login-card input {
+  min-height: 48px;
 }
 
 .login-panel p {
@@ -157,8 +190,12 @@ body.light option {
 }
 
 .login-actions {
-  justify-content: flex-start;
-  margin: 0 0 4px;
+  justify-content: stretch;
+  margin: 8px 0 4px;
+}
+
+.login-actions button {
+  flex: 1;
 }
 
 .app-shell {
@@ -338,7 +375,7 @@ body.light .icon-button.lamp-button img {
 }
 
 .login-actions {
-  justify-content: flex-start;
+  justify-content: stretch;
 }
 
 .brand h1,
@@ -1131,6 +1168,11 @@ th {
   box-shadow: var(--shadow);
 }
 
+.toast[hidden],
+.toast:empty {
+  display: none;
+}
+
 .dialog-toast {
   position: sticky;
   top: 0;
@@ -1241,9 +1283,14 @@ th {
   }
 
   .color-field,
-  .dialog-actions {
+  .dialog-actions,
+  .login-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .login-card {
+    padding: 26px;
   }
 
   .user-summary {
