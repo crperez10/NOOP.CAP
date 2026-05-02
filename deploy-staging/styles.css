@@ -932,6 +932,16 @@ body.light .danger-button {
   background: rgba(251, 113, 133, 0.12);
 }
 
+.favorite-button.active {
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.42);
+  background: rgba(251, 191, 36, 0.16);
+}
+
+body.light .favorite-button.active {
+  color: #101522;
+}
+
 .icon-button {
   width: 40px;
   padding: 0;
@@ -1082,6 +1092,16 @@ tbody tr:last-child td {
   background: rgba(255, 255, 255, 0.035);
 }
 
+dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
 .dialog {
   width: min(560px, calc(100vw - 24px));
   padding: 0;
@@ -1095,7 +1115,7 @@ tbody tr:last-child td {
   width: min(900px, calc(100vw - 24px));
 }
 
-.dialog::backdrop {
+dialog::backdrop {
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(8px);
 }

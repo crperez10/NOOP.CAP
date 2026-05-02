@@ -7,7 +7,7 @@ const state = {
   selectedSubcategories: [],
   selectedImportance: [],
   clientSearch: "",
-  sort: "date",
+  sort: "alpha",
   page: 1,
   hasMore: false,
   view: "table",
@@ -361,6 +361,9 @@ function itemCard(item) {
       ${attachments.length ? `<div class="file-preview">${attachments.map(attachmentLink).join("")}</div>` : ""}
       <div class="meta-line">Creado por ${escapeHtml(item.createdBy?.name || "Usuario")} / ${formatDateTime(item.createdAt)}</div>
       <div class="card-actions">
+        <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">
+          ${item.favorite ? "Favorito" : "Marcar favorito"}
+        </button>
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="secondary-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>
@@ -380,6 +383,7 @@ function itemRow(item) {
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td>${escapeHtml(item.createdBy?.name || "-")}</td>
       <td class="table-actions">
+        <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">Favorito</button>
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="ghost-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>
@@ -440,6 +444,9 @@ function bindItemActions() {
   });
   document.querySelectorAll("[data-delete]").forEach((button) => {
     button.addEventListener("click", () => deleteItem(button.dataset.delete));
+  });
+  document.querySelectorAll("[data-favorite]").forEach((button) => {
+    button.addEventListener("click", () => toggleFavorite(button.dataset.favorite));
   });
 }
 
@@ -638,6 +645,20 @@ async function deleteItem(id) {
   await api(`/api/items/${id}`, { method: "DELETE" });
   notify("Registro eliminado.");
   await refreshWorkspaceData();
+}
+
+async function toggleFavorite(id) {
+  if (!canModifyData()) return;
+  const item = state.items.find((entry) => entry.id === id);
+  if (!item) return;
+
+  await api(`/api/items/${id}/favorite`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ favorite: !item.favorite }),
+  });
+  notify(!item.favorite ? "Registro marcado como favorito." : "Registro quitado de favoritos.");
+  await loadItems(true);
 }
 
 async function openUsersDialog() {
@@ -981,19 +1002,19 @@ function handleFilterChange() {
   state.selectedImportance = checkedValues("importance-filter");
   state.selectedCategories = checkedValues("category-filter");
   state.selectedSubcategories = checkedValues("subcategory-filter");
-  state.sort = document.querySelector("input[name='sort-filter']:checked")?.value || "date";
+  state.sort = document.querySelector("input[name='sort-filter']:checked")?.value || "alpha";
   updateFilterButtonLabel();
   loadItems(true);
 }
 
 function clearAdvancedFilters() {
   els.filterPopover.querySelectorAll("input[type='checkbox']").forEach((input) => (input.checked = false));
-  const dateSort = els.filterPopover.querySelector("input[name='sort-filter'][value='date']");
-  if (dateSort) dateSort.checked = true;
+  const alphaSort = els.filterPopover.querySelector("input[name='sort-filter'][value='alpha']");
+  if (alphaSort) alphaSort.checked = true;
   state.selectedImportance = [];
   state.selectedCategories = [];
   state.selectedSubcategories = [];
-  state.sort = "date";
+  state.sort = "alpha";
   updateFilterButtonLabel();
   loadItems(true);
 }
@@ -1003,7 +1024,7 @@ function checkedValues(name) {
 }
 
 function updateFilterButtonLabel() {
-  const total = state.selectedImportance.length + state.selectedCategories.length + state.selectedSubcategories.length + (state.sort !== "date" ? 1 : 0);
+  const total = state.selectedImportance.length + state.selectedCategories.length + state.selectedSubcategories.length;
   els.filterMenuBtn.textContent = total ? `Filtros (${total})` : "Filtros";
 }
 

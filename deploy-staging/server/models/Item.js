@@ -22,6 +22,7 @@ const itemSchema = new mongoose.Schema(
     subcategory: { type: String, default: "", trim: true },
     description: { type: String, default: "" },
     attachments: [attachmentSchema],
+    favorite: { type: Boolean, default: false, index: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }

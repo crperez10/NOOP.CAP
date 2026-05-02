@@ -10,7 +10,7 @@ itemsRouter.use(requireAuth);
 
 itemsRouter.get("/", async (req, res) => {
   const query = await buildItemQuery(req.query);
-  const sort = req.query.sort === "importance" ? importanceSort() : { date: -1, createdAt: -1 };
+  const sort = req.query.sort === "importance" ? importanceSort() : alphaSort();
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 50);
 
@@ -47,6 +47,7 @@ itemsRouter.post("/", requireRole("admin"), upload.array("attachments"), async (
       subcategory: req.body.subcategory,
       description: req.body.description,
       attachments,
+      favorite: false,
       createdBy: req.user._id,
     }))
   );
@@ -82,6 +83,17 @@ itemsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), asy
     new: true,
     runValidators: true,
   }).populate("createdBy", "name email avatar role");
+
+  if (!item) return res.status(404).json({ message: "Registro no encontrado." });
+  res.json({ item: serializeItem(item) });
+});
+
+itemsRouter.patch("/:id/favorite", requireRole("admin"), async (req, res) => {
+  const item = await Item.findByIdAndUpdate(
+    req.params.id,
+    { $set: { favorite: Boolean(req.body.favorite) } },
+    { new: true, runValidators: true }
+  ).populate("createdBy", "name email avatar role");
 
   if (!item) return res.status(404).json({ message: "Registro no encontrado." });
   res.json({ item: serializeItem(item) });
@@ -132,6 +144,7 @@ function serializeItem(item) {
     subcategory: item.subcategory,
     description: item.description,
     attachments: item.attachments,
+    favorite: Boolean(item.favorite),
     createdBy: item.createdBy,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
@@ -139,7 +152,11 @@ function serializeItem(item) {
 }
 
 function importanceSort() {
-  return { importanceRank: 1, date: -1, createdAt: -1 };
+  return { favorite: -1, importanceRank: 1, subject: 1, date: -1, createdAt: -1 };
+}
+
+function alphaSort() {
+  return { favorite: -1, subject: 1, date: -1, createdAt: -1 };
 }
 
 function escapeRegExp(value) {
