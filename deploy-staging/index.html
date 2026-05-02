@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/assets/contrast.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <title>CP Workspace</title>
+  </head>
+  <body>
+    <section id="login-view" class="login-view" hidden>
+      <form id="native-login-form" class="login-card">
+        <p class="eyebrow">CP Workspace</p>
+        <h1>CP workspace</h1>
+        <input id="native-login-email" type="email" placeholder="Email" autocomplete="email" />
+        <input id="native-login-password" type="password" placeholder="Password" autocomplete="current-password" />
+        <div class="login-actions">
+          <button class="primary-button" type="submit">Ingresar</button>
+          <button id="guest-login-btn" class="secondary-button" type="button">Entrar como invitado</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="app" class="app-shell" hidden>
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-title-row">
+            <button id="hamburger-btn" class="hamburger-button" type="button" aria-expanded="false" title="Menu">
+              <span></span><span></span><span></span>
+            </button>
+            <button id="theme-toggle" class="icon-button lamp-button" type="button" title="Cambiar tema">
+              <img src="/assets/contrast.svg" alt="" />
+            </button>
+          </div>
+          <nav id="hamburger-menu" class="hamburger-menu" hidden>
+            <button class="role-editor" type="button" data-menu-action="new-item">Nuevo registro</button>
+            <button class="role-admin" type="button" data-menu-action="clients">Clientes</button>
+            <button type="button" data-menu-action="account">Cuenta</button>
+            <button class="role-admin" type="button" data-menu-action="settings">Configuracion</button>
+            <button type="button" data-menu-action="logout">Cerrar sesion</button>
+          </nav>
+          <div id="user-summary" class="user-summary"></div>
+        </div>
+
+        <section class="side-section role-client-access" id="clients-sidebar-section">
+          <div class="section-title"><span>Clientes</span></div>
+          <div class="client-search-field">
+            <span class="search-icon"></span>
+            <input id="client-search-input" type="search" placeholder="Buscar cliente" />
+          </div>
+          <div id="client-list" class="client-list"></div>
+        </section>
+      </aside>
+
+      <main class="workspace role-client-access" id="workspace">
+        <section id="client-detail-panel" class="client-detail-panel" hidden></section>
+        <section class="page-heading" id="page-heading">
+          <p class="eyebrow">Client Data</p>
+          <h1>CP Workspace =D</h1>
+        </section>
+
+        <section class="filters-panel">
+          <div class="search-field wide-search">
+            <span class="search-icon"></span>
+            <input id="keyword-filter" type="search" placeholder="Buscar por asunto, categoria o descripcion" />
+          </div>
+          <label class="date-filter">Desde <input id="from-filter" type="date" /></label>
+          <label class="date-filter">Hasta <input id="to-filter" type="date" /></label>
+          <div class="filter-menu-wrap">
+            <button id="filter-menu-btn" class="secondary-button" type="button" aria-expanded="false">Filtros</button>
+            <div id="filter-popover" class="filter-popover" hidden>
+              <div class="filter-section">
+                <strong>Importancia</strong>
+                <label><input type="checkbox" name="importance-filter" value="alta" /> Alta</label>
+                <label><input type="checkbox" name="importance-filter" value="media" /> Media</label>
+                <label><input type="checkbox" name="importance-filter" value="baja" /> Baja</label>
+              </div>
+              <div class="filter-section">
+                <strong>Categorias</strong>
+                <div id="category-options"></div>
+              </div>
+              <div class="filter-section">
+                <strong>Subcategorias</strong>
+                <div id="subcategory-options"></div>
+              </div>
+              <button id="clear-filters-btn" class="secondary-button" type="button">Limpiar filtros</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="records-toolbar">
+          <button id="table-view-btn" class="secondary-button" type="button">Tabla</button>
+          <button id="card-view-btn" class="secondary-button" type="button">Cards</button>
+          <span id="result-count" class="result-count"></span>
+        </section>
+
+        <div id="loader" class="loader" hidden></div>
+        <section id="cards-view" class="records-grid" hidden></section>
+        <section id="table-view" class="table-panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Asunto</th>
+                <th>Cliente</th>
+                <th>Categoria</th>
+                <th>Fecha</th>
+                <th>Importancia</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </section>
+        <button id="load-more-btn" class="secondary-button" type="button" hidden>Cargar mas</button>
+      </main>
+    </div>
+
+    <dialog id="client-dialog"><form id="client-form" class="form-card" method="dialog">
+      <input id="client-id" type="hidden" />
+      <input id="client-name" name="name" placeholder="Nombre" required />
+      <input id="client-industry" name="industry" placeholder="Rubro" />
+      <input id="client-address" name="address" placeholder="Direccion" />
+      <input id="client-contract-type" name="contractType" placeholder="Contrato" />
+      <input id="client-contact-name" name="contactName" placeholder="Contacto" />
+      <input id="client-contact-role" name="contactRole" placeholder="Rol" />
+      <input id="client-contact-email" name="contactEmail" placeholder="Email" />
+      <input id="client-contact-phone" name="contactPhone" placeholder="Telefono" />
+      <input id="client-color" name="color" type="color" value="#4f8cff" />
+      <textarea id="client-notes" name="notes" placeholder="Notas"></textarea>
+      <input id="client-files" type="file" multiple />
+      <div id="client-file-preview" class="file-preview"></div>
+      <button class="primary-button" type="submit">Guardar cliente</button>
+      <button class="secondary-button" type="button" data-close="client-dialog">Cerrar</button>
+    </form></dialog>
+
+    <dialog id="clients-admin-dialog"><section class="form-card">
+      <button id="admin-new-client-btn" class="primary-button" type="button">Agregar cliente</button>
+      <div id="clients-admin-list"></div>
+      <button class="secondary-button" type="button" data-close="clients-admin-dialog">Cerrar</button>
+    </section></dialog>
+
+    <dialog id="item-dialog"><form id="item-form" class="form-card" method="dialog">
+      <h2 id="item-dialog-title">Nuevo registro</h2>
+      <input id="item-id" type="hidden" />
+      <select id="item-client" required></select>
+      <input id="item-subject" placeholder="Asunto" required />
+      <input id="item-date" type="date" required />
+      <select id="item-importance"><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option></select>
+      <input id="item-category" placeholder="Categoria" />
+      <input id="item-subcategory" placeholder="Subcategoria" />
+      <textarea id="item-description" placeholder="Descripcion"></textarea>
+      <div id="drop-zone" class="drop-zone">Soltar archivos</div>
+      <input id="item-files" type="file" multiple />
+      <div id="file-preview" class="file-preview"></div>
+      <button class="primary-button" type="submit">Guardar registro</button>
+      <button class="secondary-button" type="button" data-close="item-dialog">Cerrar</button>
+    </form></dialog>
+
+    <dialog id="users-dialog"><section class="form-card">
+      <div id="settings-tabs" class="settings-tabs">
+        <button type="button" data-settings-tab="create">Crear usuarios</button>
+        <button type="button" data-settings-tab="manage">Administrar usuarios</button>
+        <button type="button" data-settings-tab="password">Cambiar password</button>
+      </div>
+      <form id="user-create-form">
+        <input id="user-name" placeholder="Nombre" />
+        <input id="user-email" type="email" placeholder="Email" />
+        <input id="user-password" type="password" placeholder="Password" />
+        <select id="user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select>
+        <button class="primary-button" type="submit">Crear usuario</button>
+      </form>
+      <div id="users-list" class="users-list"></div>
+      <form id="password-form">
+        <input id="current-password" type="password" placeholder="Password actual" />
+        <input id="new-password" type="password" placeholder="Nuevo password" />
+        <button class="primary-button" type="submit">Cambiar password</button>
+      </form>
+      <button class="secondary-button" type="button" data-close="users-dialog">Cerrar</button>
+    </section></dialog>
+
+    <dialog id="user-edit-dialog"><form id="user-edit-form" class="form-card">
+      <input id="edit-user-id" type="hidden" />
+      <input id="edit-user-name" placeholder="Nombre" />
+      <input id="edit-user-email" type="email" placeholder="Email" />
+      <select id="edit-user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select>
+      <select id="edit-user-status"><option value="active">Activo</option><option value="pending">Pendiente</option><option value="blocked">Bloqueado</option></select>
+      <input id="edit-user-password" type="password" placeholder="Nuevo password" />
+      <button class="primary-button" type="submit">Guardar usuario</button>
+      <button class="secondary-button" type="button" data-close="user-edit-dialog">Cerrar</button>
+    </form></dialog>
+
+    <dialog id="account-dialog"><form id="account-form" class="form-card">
+      <div id="account-content"></div>
+      <input id="account-avatar" type="file" accept="image/*" />
+      <img id="account-avatar-preview" alt="" />
+      <button class="primary-button" type="submit">Guardar perfil</button>
+      <button class="secondary-button" type="button" data-close="account-dialog">Cerrar</button>
+    </form></dialog>
+
+    <dialog id="item-detail-dialog"><section class="form-card">
+      <div id="item-detail-content"></div>
+      <button class="secondary-button" type="button" data-close="item-detail-dialog">Cerrar</button>
+    </section></dialog>
+
+    <div id="toast" class="toast"></div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
