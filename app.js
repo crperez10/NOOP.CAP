@@ -183,6 +183,12 @@ function bindEvents() {
       closeFilterPopover();
     }
   });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && state.user) {
+      refreshWorkspaceData().catch((error) => notify(error.message));
+    }
+  });
 }
 
 async function loadClients() {
@@ -846,6 +852,21 @@ async function refreshWorkspaceData() {
   syncClientSelect();
 }
 
+async function enterWorkspace(user) {
+  state.user = user;
+  els.loginView.hidden = true;
+  els.app.hidden = false;
+  syncRoleUI();
+
+  const session = await api("/api/auth/me", { authOptional: true, fresh: true });
+  if (session.user) {
+    state.user = session.user;
+    syncRoleUI();
+  }
+
+  await refreshWorkspaceData();
+}
+
 function roleLabelFor(role) {
   return ROLE_LABELS[role] || role || "Invitado";
 }
@@ -857,11 +878,7 @@ async function logout() {
 
 async function guestLogin() {
   const data = await api("/api/auth/guest-login", { method: "POST" });
-  state.user = data.user;
-  els.loginView.hidden = true;
-  els.app.hidden = false;
-  syncRoleUI();
-  await loadWorkspaceData();
+  await enterWorkspace(data.user);
 }
 
 async function nativeLogin(event) {
@@ -874,11 +891,7 @@ async function nativeLogin(event) {
       password: els.nativeLoginPassword.value,
     }),
   });
-  state.user = data.user;
-  els.loginView.hidden = true;
-  els.app.hidden = false;
-  syncRoleUI();
-  await loadWorkspaceData();
+  await enterWorkspace(data.user);
 }
 
 function toggleHamburgerMenu(event) {
@@ -1025,9 +1038,16 @@ function toggleTheme() {
 }
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { credentials: "include", ...options });
+  const { authOptional, authRedirect, fresh, ...fetchOptions } = options;
+  const method = String(fetchOptions.method || "GET").toUpperCase();
+  const requestUrl = method === "GET" || fresh ? withCacheBust(url) : url;
+  const response = await fetch(requestUrl, {
+    credentials: "include",
+    cache: "no-store",
+    ...fetchOptions,
+  });
   if (!response.ok) {
-    if (response.status === 401 && !options.authOptional && options.authRedirect !== false) {
+    if (response.status === 401 && !authOptional && authRedirect !== false) {
       els.app.hidden = true;
       els.loginView.hidden = false;
     }
@@ -1035,6 +1055,11 @@ async function api(url, options = {}) {
     throw new Error(error.message);
   }
   return response.json();
+}
+
+function withCacheBust(url) {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}_=${Date.now()}`;
 }
 
 function notify(message) {

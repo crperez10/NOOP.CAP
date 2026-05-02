@@ -37,6 +37,15 @@ async function buildApp() {
   const app = express();
   app.set("trust proxy", 1);
 
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/auth") || req.path.startsWith("/uploads")) {
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+    }
+    next();
+  });
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(

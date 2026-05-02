@@ -41,6 +41,9 @@ function resolveExpressUrl(req) {
 
 export default async function handler(req, res) {
   appPromise ||= createApp();
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
 
   try {
     req.url = resolveExpressUrl(req);
