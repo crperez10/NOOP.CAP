@@ -249,7 +249,7 @@ async function loadItems(reset = true) {
 }
 
 function renderClients() {
-  const allButton = clientButton({ id: "", name: "Todos los clientes", industry: "Vista global", color: "#22d3ee", itemCount: state.items.length });
+  const allButton = clientButton({ id: "", name: "Todos los clientes", industry: "Vista global", color: "#22d3ee", itemCount: totalClientItemCount() });
   const visibleClients = state.clientSearch
     ? state.clients.filter((client) => clientMatchesSearch(client, state.clientSearch))
     : state.clients;
@@ -268,6 +268,10 @@ function renderClients() {
   renderClientDetail(active);
   syncPageHeading();
   if (els.clientsAdminDialog.open) renderClientsAdminList();
+}
+
+function totalClientItemCount() {
+  return state.clients.reduce((total, client) => total + (Number(client.itemCount) || 0), 0);
 }
 
 function sortClientsByName(clients = []) {
