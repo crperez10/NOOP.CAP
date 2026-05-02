@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/contrast.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/styles.css?v=20260502-item-modal" />
+    <link rel="stylesheet" href="/styles.css?v=20260502-account-settings" />
     <title>CP Workspace</title>
   </head>
   <body>
@@ -222,45 +222,103 @@
       </div>
     </form></dialog>
 
-    <dialog id="users-dialog"><section class="form-card">
-      <div id="settings-tabs" class="settings-tabs">
-        <button type="button" data-settings-tab="create">Crear usuarios</button>
-        <button type="button" data-settings-tab="manage">Administrar usuarios</button>
-        <button type="button" data-settings-tab="password">Cambiar password</button>
+    <dialog id="users-dialog"><section class="form-card settings-card">
+      <header class="dialog-heading">
+        <div>
+          <p class="eyebrow">Configuracion</p>
+          <h3>Administrar acceso</h3>
+        </div>
+      </header>
+      <div class="settings-layout">
+        <div id="settings-tabs" class="settings-tabs">
+          <button type="button" data-settings-tab="create-users">Crear usuarios</button>
+          <button type="button" data-settings-tab="manage-users">Administrar usuarios</button>
+          <button type="button" data-settings-tab="password">Cambiar password</button>
+        </div>
+        <div class="settings-panels">
+          <form id="user-create-form" class="settings-panel" data-settings-panel="create-users">
+            <section class="settings-section">
+              <h4>Nuevo usuario</h4>
+              <div class="settings-form-grid">
+                <label>Nombre<input id="user-name" placeholder="Nombre" /></label>
+                <label>Email<input id="user-email" type="email" placeholder="Email" /></label>
+                <label>Password<input id="user-password" type="password" placeholder="Password" /></label>
+                <label>Perfil<select id="user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select></label>
+              </div>
+            </section>
+            <div class="panel-actions">
+              <button class="primary-button" type="submit">Crear usuario</button>
+            </div>
+          </form>
+          <section class="settings-panel" data-settings-panel="manage-users">
+            <section class="settings-section">
+              <h4>Usuarios creados</h4>
+              <div id="users-list" class="users-list"></div>
+            </section>
+          </section>
+          <form id="password-form" class="settings-panel password-form" data-settings-panel="password">
+            <section class="settings-section">
+              <h4>Cambiar password</h4>
+              <div class="settings-form-grid">
+                <label>Password actual<input id="current-password" type="password" placeholder="Password actual" /></label>
+                <label>Nuevo password<input id="new-password" type="password" placeholder="Nuevo password" /></label>
+              </div>
+            </section>
+            <div class="panel-actions">
+              <button class="primary-button" type="submit">Cambiar password</button>
+            </div>
+          </form>
+        </div>
       </div>
-      <form id="user-create-form">
-        <input id="user-name" placeholder="Nombre" />
-        <input id="user-email" type="email" placeholder="Email" />
-        <input id="user-password" type="password" placeholder="Password" />
-        <select id="user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select>
-        <button class="primary-button" type="submit">Crear usuario</button>
-      </form>
-      <div id="users-list" class="users-list"></div>
-      <form id="password-form">
-        <input id="current-password" type="password" placeholder="Password actual" />
-        <input id="new-password" type="password" placeholder="Nuevo password" />
-        <button class="primary-button" type="submit">Cambiar password</button>
-      </form>
-      <button class="secondary-button" type="button" data-close="users-dialog">Cerrar</button>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close="users-dialog">Cerrar</button>
+      </div>
     </section></dialog>
 
-    <dialog id="user-edit-dialog"><form id="user-edit-form" class="form-card">
+    <dialog id="user-edit-dialog"><form id="user-edit-form" class="form-card user-edit-card">
+      <header class="dialog-heading">
+        <div>
+          <p class="eyebrow">Usuarios</p>
+          <h3>Editar usuario</h3>
+        </div>
+      </header>
       <input id="edit-user-id" type="hidden" />
-      <input id="edit-user-name" placeholder="Nombre" />
-      <input id="edit-user-email" type="email" placeholder="Email" />
-      <select id="edit-user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select>
-      <select id="edit-user-status"><option value="active">Activo</option><option value="pending">Pendiente</option><option value="blocked">Bloqueado</option></select>
-      <input id="edit-user-password" type="password" placeholder="Nuevo password" />
-      <button class="primary-button" type="submit">Guardar usuario</button>
-      <button class="secondary-button" type="button" data-close="user-edit-dialog">Cerrar</button>
+      <section class="settings-section">
+        <h4>Datos del usuario</h4>
+        <div class="settings-form-grid">
+          <label>Nombre<input id="edit-user-name" placeholder="Nombre" /></label>
+          <label>Email<input id="edit-user-email" type="email" placeholder="Email" /></label>
+          <label>Perfil<select id="edit-user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select></label>
+          <label>Estado<select id="edit-user-status"><option value="active">Activo</option><option value="pending">Pendiente</option><option value="blocked">Bloqueado</option></select></label>
+          <label class="wide-field">Nuevo password<input id="edit-user-password" type="password" placeholder="Dejar vacio para conservar el actual" /></label>
+        </div>
+      </section>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close="user-edit-dialog">Cerrar</button>
+        <button class="primary-button" type="submit">Guardar usuario</button>
+      </div>
     </form></dialog>
 
-    <dialog id="account-dialog"><form id="account-form" class="form-card">
-      <div id="account-content"></div>
-      <input id="account-avatar" type="file" accept="image/*" />
-      <img id="account-avatar-preview" alt="" />
-      <button class="primary-button" type="submit">Guardar perfil</button>
-      <button class="secondary-button" type="button" data-close="account-dialog">Cerrar</button>
+    <dialog id="account-dialog"><form id="account-form" class="form-card account-card-modal">
+      <header class="dialog-heading">
+        <div>
+          <p class="eyebrow">Cuenta</p>
+          <h3>Perfil de usuario</h3>
+        </div>
+      </header>
+      <section class="account-section">
+        <h4>Datos de cuenta</h4>
+        <div id="account-content"></div>
+      </section>
+      <section class="account-section">
+        <h4>Foto de perfil</h4>
+        <label class="avatar-upload-field">Seleccionar imagen<input id="account-avatar" type="file" accept="image/*" /></label>
+        <div id="account-avatar-preview" class="avatar-preview" aria-hidden="true"></div>
+      </section>
+      <div class="dialog-actions">
+        <button class="secondary-button" type="button" data-close="account-dialog">Cerrar</button>
+        <button class="primary-button" type="submit">Guardar perfil</button>
+      </div>
     </form></dialog>
 
     <dialog id="item-detail-dialog"><section class="form-card">
@@ -269,6 +327,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260502-item-modal" defer></script>
+    <script src="/app.js?v=20260502-account-settings" defer></script>
   </body>
 </html>
