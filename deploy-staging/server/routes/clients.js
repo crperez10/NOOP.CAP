@@ -9,7 +9,7 @@ export const clientsRouter = express.Router();
 clientsRouter.use(requireAuth);
 
 clientsRouter.get("/", async (_req, res) => {
-  const clients = await Client.find().sort({ updatedAt: -1 });
+  const clients = await Client.find().sort({ name: 1, createdAt: 1 });
   const counts = await Item.aggregate([{ $group: { _id: "$client", total: { $sum: 1 } } }]);
   const countMap = new Map(counts.map((row) => [String(row._id), row.total]));
 

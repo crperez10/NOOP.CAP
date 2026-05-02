@@ -67,7 +67,6 @@ textarea {
   border-radius: var(--radius);
   padding: 11px 12px;
   outline: none;
-  transition: border-color 180ms var(--ease), box-shadow 180ms var(--ease), background 180ms var(--ease);
 }
 
 input:focus,
@@ -561,14 +560,12 @@ body.light .icon-button.lamp-button img {
   border: 1px solid transparent;
   border-radius: var(--radius);
   text-align: left;
-  transition: background 180ms var(--ease), border-color 180ms var(--ease), transform 180ms var(--ease);
 }
 
 .client-row:hover,
 .client-row.active {
   background: rgba(255, 255, 255, 0.065);
   border-color: var(--line-strong);
-  transform: translateY(-1px);
 }
 
 .client-dot {
@@ -761,11 +758,9 @@ body.light .filter-popover {
 .record-card {
   border-radius: var(--radius);
   padding: 18px;
-  transition: transform 180ms var(--ease), border-color 180ms var(--ease);
 }
 
 .record-card:hover {
-  transform: translateY(-2px);
   border-color: var(--line-strong);
 }
 
@@ -844,7 +839,6 @@ body.light .danger-button {
   padding: 9px 13px;
   color: var(--text);
   text-decoration: none;
-  transition: transform 180ms var(--ease), border-color 180ms var(--ease), background 180ms var(--ease);
 }
 
 .primary-button {
@@ -878,11 +872,6 @@ body.light .danger-button {
   width: 40px;
   padding: 0;
   flex: 0 0 auto;
-}
-
-button:hover,
-.primary-button:hover {
-  transform: translateY(-1px);
 }
 
 .view-toggle {
@@ -1006,10 +995,10 @@ th {
 }
 
 .client-form-card {
-  width: min(760px, calc(100vw - 28px));
+  width: min(820px, calc(100vw - 28px));
   max-height: min(84vh, 780px);
   overflow: auto;
-  padding: 28px;
+  padding: 30px;
 }
 
 .dialog-heading {
@@ -1025,6 +1014,22 @@ th {
 .dialog-heading h3 {
   margin: 2px 0 0;
   font-size: 1.35rem;
+}
+
+.client-form-section {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.client-form-section h4 {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.98rem;
 }
 
 .dialog-header {
@@ -1054,7 +1059,7 @@ th {
 .client-form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
 .wide-field {
@@ -1066,7 +1071,7 @@ th {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  margin: 8px 0 18px !important;
+  margin: 0 !important;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);

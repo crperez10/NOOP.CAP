@@ -125,25 +125,39 @@
         </div>
       </header>
       <input id="client-id" type="hidden" />
-      <div class="client-form-grid">
-        <label>Nombre del cliente<input id="client-name" name="name" placeholder="Ej: ATSA" required /></label>
-        <label>Rubro<input id="client-industry" name="industry" placeholder="Ej: Obra social" /></label>
-        <label class="wide-field">Direccion<input id="client-address" name="address" placeholder="Direccion principal" /></label>
-        <label>Tipo de contrato<input id="client-contract-type" name="contractType" placeholder="Contrato" /></label>
-        <label>Contacto principal<input id="client-contact-name" name="contactName" placeholder="Nombre" /></label>
-        <label>Rol del contacto<input id="client-contact-role" name="contactRole" placeholder="Rol" /></label>
-        <label>Email de contacto<input id="client-contact-email" name="contactEmail" placeholder="Email" /></label>
-        <label>Telefono<input id="client-contact-phone" name="contactPhone" placeholder="Telefono" /></label>
-      </div>
-      <label class="color-field">
-        <span>
-          <strong>Color del cliente</strong>
-          <small>Se usa como etiqueta visual en la lista y en los registros.</small>
-        </span>
-        <input id="client-color" name="color" type="color" value="#4f8cff" />
-      </label>
-      <label>Notas<textarea id="client-notes" name="notes" placeholder="Notas generales del cliente"></textarea></label>
-      <label>Adjuntos del cliente<input id="client-files" type="file" multiple /></label>
+      <section class="client-form-section">
+        <h4>Identificacion</h4>
+        <div class="client-form-grid">
+          <label>Nombre del cliente<input id="client-name" name="name" placeholder="Ej: ATSA" required /></label>
+          <label>Rubro<input id="client-industry" name="industry" placeholder="Ej: Obra social" /></label>
+          <label class="wide-field">Direccion<input id="client-address" name="address" placeholder="Direccion principal" /></label>
+          <label>Tipo de contrato<input id="client-contract-type" name="contractType" placeholder="Contrato" /></label>
+        </div>
+      </section>
+      <section class="client-form-section">
+        <h4>Contacto principal</h4>
+        <div class="client-form-grid">
+          <label>Nombre<input id="client-contact-name" name="contactName" placeholder="Nombre" /></label>
+          <label>Rol<input id="client-contact-role" name="contactRole" placeholder="Rol" /></label>
+          <label>Email<input id="client-contact-email" name="contactEmail" placeholder="Email" /></label>
+          <label>Telefono<input id="client-contact-phone" name="contactPhone" placeholder="Telefono" /></label>
+        </div>
+      </section>
+      <section class="client-form-section">
+        <h4>Visual y notas</h4>
+        <label class="color-field">
+          <span>
+            <strong>Color del cliente</strong>
+            <small>Identifica al cliente en la lista lateral y en sus registros asociados.</small>
+          </span>
+          <input id="client-color" name="color" type="color" value="#4f8cff" />
+        </label>
+        <label>Notas<textarea id="client-notes" name="notes" placeholder="Notas generales del cliente"></textarea></label>
+      </section>
+      <section class="client-form-section">
+        <h4>Adjuntos</h4>
+        <label>Archivos del cliente<input id="client-files" type="file" multiple /></label>
+      </section>
       <div id="client-file-preview" class="file-preview"></div>
       <div class="dialog-actions">
         <button class="secondary-button" type="button" data-close="client-dialog">Cerrar</button>

@@ -200,7 +200,7 @@ async function loadClients() {
   }
 
   const data = await api("/api/clients");
-  state.clients = data.clients;
+  state.clients = sortClientsByName(data.clients);
   renderClients();
   syncClientSelect();
   if (state.user) syncRoleUI();
@@ -267,6 +267,15 @@ function renderClients() {
   renderClientDetail(active);
   syncPageHeading();
   renderClientsAdminList();
+}
+
+function sortClientsByName(clients = []) {
+  return [...clients].sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), "es", {
+      sensitivity: "base",
+      numeric: true,
+    })
+  );
 }
 
 function clientMatchesSearch(client, keyword) {
