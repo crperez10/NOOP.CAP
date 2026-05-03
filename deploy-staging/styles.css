@@ -732,6 +732,16 @@ body.light .icon-button.lamp-button img {
   line-height: 1.7;
 }
 
+.client-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.validator-button {
+  text-decoration: none;
+}
+
 .filters-panel {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(150px, 190px) minmax(150px, 190px) auto;

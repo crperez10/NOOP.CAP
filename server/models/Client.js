@@ -27,6 +27,7 @@ const clientSchema = new mongoose.Schema(
     industry: { type: String, default: "" },
     address: { type: String, default: "" },
     contractType: { type: String, default: "" },
+    validatorUrl: { type: String, default: "" },
     contacts: [contactSchema],
     attachments: [attachmentSchema],
     notes: { type: String, default: "" },

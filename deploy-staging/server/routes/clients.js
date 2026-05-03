@@ -27,6 +27,7 @@ clientsRouter.post("/", requireRole("admin"), upload.array("attachments"), async
     industry: req.body.industry,
     address: req.body.address,
     contractType: req.body.contractType,
+    validatorUrl: normalizeUrl(req.body.validatorUrl),
     contacts: parseContacts(req.body.contacts),
     attachments: await filesToAttachments(req.files),
     notes: req.body.notes,
@@ -44,6 +45,7 @@ clientsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), a
       industry: req.body.industry,
       address: req.body.address,
       contractType: req.body.contractType,
+      validatorUrl: normalizeUrl(req.body.validatorUrl),
       contacts: parseContacts(req.body.contacts),
       notes: req.body.notes,
       color: req.body.color,
@@ -80,6 +82,7 @@ function serializeClient(client) {
     industry: client.industry,
     address: client.address,
     contractType: client.contractType,
+    validatorUrl: client.validatorUrl || "",
     contacts: client.contacts,
     attachments: client.attachments,
     notes: client.notes,
@@ -87,6 +90,12 @@ function serializeClient(client) {
     createdAt: client.createdAt,
     updatedAt: client.updatedAt,
   };
+}
+
+function normalizeUrl(value) {
+  const url = String(value || "").trim();
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
 function parseContacts(value) {

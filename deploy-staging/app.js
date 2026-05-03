@@ -59,6 +59,7 @@ const els = {
   clientIndustry: document.querySelector("#client-industry"),
   clientAddress: document.querySelector("#client-address"),
   clientContractType: document.querySelector("#client-contract-type"),
+  clientValidatorUrl: document.querySelector("#client-validator-url"),
   clientContactName: document.querySelector("#client-contact-name"),
   clientContactRole: document.querySelector("#client-contact-role"),
   clientContactEmail: document.querySelector("#client-contact-email"),
@@ -315,7 +316,10 @@ function renderClientDetail(client) {
       <p class="eyebrow">Datos generales</p>
       <h3>${escapeHtml(client.name)}</h3>
       <p class="client-description">${escapeHtml(client.notes || "-")}</p>
-      ${canModifyData() ? `<button class="secondary-button" type="button" data-client-detail-action>Datos del cliente</button>` : ""}
+      <div class="client-detail-actions">
+        ${canModifyData() ? `<button class="secondary-button" type="button" data-client-detail-action>Datos del cliente</button>` : ""}
+        ${client.validatorUrl ? `<a class="secondary-button validator-button" href="${escapeHtml(client.validatorUrl)}" target="_blank" rel="noopener noreferrer">Validador</a>` : ""}
+      </div>
     </div>
   `;
   els.clientDetailPanel
@@ -463,6 +467,7 @@ function openClientDialog(client = null, options = {}) {
   els.clientIndustry.value = client?.industry || "";
   els.clientAddress.value = client?.address || "";
   els.clientContractType.value = client?.contractType || "";
+  els.clientValidatorUrl.value = client?.validatorUrl || "";
   const contact = client?.contacts?.[0] || {};
   els.clientContactName.value = contact.name || "";
   els.clientContactRole.value = contact.role || "";
@@ -501,6 +506,7 @@ async function saveClient(event) {
     payload.set("industry", els.clientIndustry.value);
     payload.set("address", els.clientAddress.value);
     payload.set("contractType", els.clientContractType.value);
+    payload.set("validatorUrl", els.clientValidatorUrl.value);
     payload.set("contacts", JSON.stringify(contacts));
     payload.set("color", els.clientColor.value);
     payload.set("notes", els.clientNotes.value);
