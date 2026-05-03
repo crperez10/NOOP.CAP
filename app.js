@@ -9,6 +9,8 @@ const state = {
   clientSearch: "",
   sort: "alpha",
   page: 1,
+  totalItems: 0,
+  pageSize: 10,
   hasMore: false,
   view: "table",
   files: [],
@@ -33,7 +35,10 @@ const els = {
   tableView: document.querySelector("#table-view"),
   tbody: document.querySelector("#items-tbody"),
   loader: document.querySelector("#loader"),
-  loadMoreBtn: document.querySelector("#load-more-btn"),
+  paginationControls: document.querySelector("#pagination-controls"),
+  prevPageBtn: document.querySelector("#prev-page-btn"),
+  nextPageBtn: document.querySelector("#next-page-btn"),
+  pageStatus: document.querySelector("#page-status"),
   keywordFilter: document.querySelector("#keyword-filter"),
   categoryOptions: document.querySelector("#category-options"),
   subcategoryOptions: document.querySelector("#subcategory-options"),
@@ -149,7 +154,8 @@ function bindEvents() {
   els.filterMenuBtn.addEventListener("click", toggleFilterPopover);
   els.filterPopover.addEventListener("change", handleFilterChange);
   els.clearFiltersBtn.addEventListener("click", clearAdvancedFilters);
-  els.loadMoreBtn.addEventListener("click", () => loadItems(false));
+  els.prevPageBtn.addEventListener("click", () => goToPage(state.page - 1));
+  els.nextPageBtn.addEventListener("click", () => goToPage(state.page + 1));
   els.cardViewBtn.addEventListener("click", () => setView("cards"));
   els.tableViewBtn.addEventListener("click", () => setView("table"));
   els.themeToggle.addEventListener("click", toggleTheme);
@@ -212,6 +218,7 @@ async function loadItems(reset = true) {
   if (!hasClientAccess()) {
     state.items = [];
     state.hasMore = false;
+    state.totalItems = 0;
     els.loader.hidden = true;
     renderItems();
     return;
@@ -219,13 +226,12 @@ async function loadItems(reset = true) {
 
   if (reset) {
     state.page = 1;
-    state.items = [];
   }
 
   els.loader.hidden = false;
   const params = new URLSearchParams({
     page: String(state.page),
-    limit: "18",
+    limit: String(state.pageSize),
     sort: state.sort,
   });
 
@@ -239,14 +245,23 @@ async function loadItems(reset = true) {
 
   try {
     const data = await api(`/api/items?${params}`);
-    state.items = reset ? data.items : [...state.items, ...data.items];
+    state.items = data.items;
     state.hasMore = data.hasMore;
-    state.page = data.page + 1;
+    state.page = data.page;
+    state.totalItems = data.total;
     updateFilterOptions();
     renderItems(data.total);
   } finally {
     els.loader.hidden = true;
   }
+}
+
+function goToPage(page) {
+  const totalPages = totalPagesForItems();
+  const nextPage = Math.min(Math.max(page, 1), totalPages);
+  if (nextPage === state.page) return;
+  state.page = nextPage;
+  loadItems(false);
 }
 
 function renderClients() {
@@ -333,7 +348,7 @@ function syncPageHeading() {
 
 function renderItems(total = state.items.length) {
   els.resultCount.textContent = `${total} ${total === 1 ? "registro" : "registros"}`;
-  els.loadMoreBtn.hidden = !state.hasMore;
+  syncPagination();
 
   if (!state.items.length) {
     els.cardsView.innerHTML = `<article class="record-card"><h3>No hay registros</h3><p class="muted">Crea el primer item o ajusta los filtros.</p></article>`;
@@ -345,6 +360,18 @@ function renderItems(total = state.items.length) {
   els.tbody.innerHTML = state.items.map(itemRow).join("");
   bindItemActions();
   if (state.user) syncRoleUI();
+}
+
+function syncPagination() {
+  const totalPages = totalPagesForItems();
+  els.paginationControls.hidden = state.totalItems <= state.pageSize;
+  els.pageStatus.textContent = `Hoja ${Math.min(state.page, totalPages)} de ${totalPages}`;
+  els.prevPageBtn.disabled = state.page <= 1;
+  els.nextPageBtn.disabled = state.page >= totalPages;
+}
+
+function totalPagesForItems() {
+  return Math.max(Math.ceil(state.totalItems / state.pageSize), 1);
 }
 
 function itemCard(item) {

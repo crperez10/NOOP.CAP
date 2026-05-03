@@ -906,7 +906,8 @@ body.light .danger-button {
 .ghost-button,
 .icon-button,
 .view-toggle button,
-.load-more {
+.load-more,
+.pagination-controls {
   min-height: 40px;
   border: 1px solid transparent;
   border-radius: var(--radius);
@@ -931,7 +932,8 @@ body.light .danger-button {
 .ghost-button,
 .icon-button,
 .view-toggle button,
-.load-more {
+.load-more,
+.pagination-controls {
   background: rgba(255, 255, 255, 0.055);
   border-color: var(--line);
 }
@@ -985,6 +987,22 @@ body.light .favorite-button.active {
 .result-count {
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: fit-content;
+  margin-top: 16px;
+}
+
+.page-status {
+  min-width: 96px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .table-panel {
