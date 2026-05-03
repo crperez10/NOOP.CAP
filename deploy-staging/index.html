@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/contrast.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/styles.css?v=20260503-record-pages" />
+    <link rel="stylesheet" href="/styles.css?v=20260503-rich-record-text-v3" />
     <title>CP Workspace</title>
   </head>
   <body>
@@ -215,7 +215,37 @@
       </section>
       <section class="item-form-section">
         <h4>Descripcion</h4>
-        <label class="wide-field">Detalle<textarea id="item-description" placeholder="Descripcion"></textarea></label>
+        <div class="rich-text-field wide-field">
+          <span class="field-label">Detalle</span>
+          <div class="rich-toolbar" aria-label="Herramientas de texto">
+            <button type="button" data-rich-command="bold"><strong>B</strong></button>
+            <button type="button" data-rich-command="italic"><em>I</em></button>
+            <button type="button" data-rich-command="underline"><u>U</u></button>
+            <button type="button" data-rich-command="insertUnorderedList">Lista</button>
+            <button type="button" data-rich-block="h3">Titulo</button>
+            <button type="button" data-rich-block="p">Texto</button>
+            <label>Fuente
+              <select id="rich-font-family">
+                <option value="">Normal</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Courier New', monospace">Courier</option>
+              </select>
+            </label>
+            <label>Tamano
+              <select id="rich-font-size">
+                <option value="">Normal</option>
+                <option value="14px">Chico</option>
+                <option value="18px">Mediano</option>
+                <option value="22px">Grande</option>
+              </select>
+            </label>
+            <label>Color<input id="rich-text-color" type="color" value="#f6f7fb" /></label>
+            <label>Resaltar<input id="rich-highlight-color" type="color" value="#fbbf24" /></label>
+          </div>
+          <div id="item-description-editor" class="rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Descripcion"></div>
+          <textarea id="item-description" hidden></textarea>
+        </div>
       </section>
       <section class="item-form-section">
         <h4>Adjuntos</h4>
@@ -339,6 +369,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260503-record-pages" defer></script>
+    <script src="/app.js?v=20260503-rich-record-text-v3" defer></script>
   </body>
 </html>

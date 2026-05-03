@@ -16,6 +16,7 @@ const state = {
   files: [],
   clientFiles: [],
   editingItem: null,
+  richSelection: null,
 };
 
 const ROLE_LABELS = {
@@ -84,7 +85,12 @@ const els = {
   itemImportance: document.querySelector("#item-importance"),
   itemCategory: document.querySelector("#item-category"),
   itemSubcategory: document.querySelector("#item-subcategory"),
+  itemDescriptionEditor: document.querySelector("#item-description-editor"),
   itemDescription: document.querySelector("#item-description"),
+  richFontFamily: document.querySelector("#rich-font-family"),
+  richFontSize: document.querySelector("#rich-font-size"),
+  richTextColor: document.querySelector("#rich-text-color"),
+  richHighlightColor: document.querySelector("#rich-highlight-color"),
   itemFiles: document.querySelector("#item-files"),
   dropZone: document.querySelector("#drop-zone"),
   filePreview: document.querySelector("#file-preview"),
@@ -174,6 +180,17 @@ function bindEvents() {
   els.settingsTabs.addEventListener("click", handleSettingsTabClick);
   els.accountForm.addEventListener("submit", saveProfile);
   els.accountAvatar.addEventListener("change", previewAccountAvatar);
+  els.itemForm.addEventListener("click", handleRichToolbarClick);
+  els.itemDescriptionEditor.addEventListener("keyup", saveRichSelection);
+  els.itemDescriptionEditor.addEventListener("mouseup", saveRichSelection);
+  els.itemDescriptionEditor.addEventListener("input", () => {
+    saveRichSelection();
+    syncRichDescription();
+  });
+  els.richFontFamily.addEventListener("change", () => applyRichStyle("fontFamily", els.richFontFamily.value));
+  els.richFontSize.addEventListener("change", () => applyRichStyle("fontSize", els.richFontSize.value));
+  els.richTextColor.addEventListener("input", () => applyRichStyle("color", els.richTextColor.value));
+  els.richHighlightColor.addEventListener("input", () => applyRichStyle("backgroundColor", els.richHighlightColor.value));
   els.itemFiles.addEventListener("change", (event) => setFiles([...event.target.files]));
   els.dropZone.addEventListener("dragover", handleDragOver);
   els.dropZone.addEventListener("dragleave", () => els.dropZone.classList.remove("dragging"));
@@ -386,7 +403,7 @@ function itemCard(item) {
         </div>
         <span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span>
       </header>
-      <p class="muted">${escapeHtml(item.description || "Sin descripcion")}</p>
+      <p class="muted">${escapeHtml(plainTextFromHtml(item.description) || "Sin descripcion")}</p>
       <div class="chip-row">
         <span class="chip">${escapeHtml(item.category)}</span>
         ${item.subcategory ? `<span class="chip">${escapeHtml(item.subcategory)}</span>` : ""}
@@ -466,6 +483,74 @@ function renderCheckboxOptions(container, name, values, selectedValues) {
         )
         .join("")
     : `<span class="muted">Sin opciones</span>`;
+}
+
+function handleRichToolbarClick(event) {
+  const button = event.target.closest("[data-rich-command], [data-rich-block]");
+  if (!button) return;
+
+  if (button.dataset.richCommand) {
+    applyRichCommand(button.dataset.richCommand);
+    return;
+  }
+
+  if (button.dataset.richBlock) {
+    applyRichCommand("formatBlock", button.dataset.richBlock);
+  }
+}
+
+function applyRichCommand(command, value = null) {
+  restoreRichSelection();
+  els.itemDescriptionEditor.focus();
+  document.execCommand(command, false, value);
+  syncRichDescription();
+}
+
+function applyRichStyle(property, value) {
+  if (!value) return;
+  restoreRichSelection();
+  els.itemDescriptionEditor.focus();
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount || selection.isCollapsed) return;
+
+  const range = selection.getRangeAt(0);
+  if (!els.itemDescriptionEditor.contains(range.commonAncestorContainer)) return;
+
+  const span = document.createElement("span");
+  span.style[property] = value;
+  span.appendChild(range.extractContents());
+  range.insertNode(span);
+  selection.removeAllRanges();
+  const nextRange = document.createRange();
+  nextRange.selectNodeContents(span);
+  selection.addRange(nextRange);
+  saveRichSelection();
+  syncRichDescription();
+}
+
+function saveRichSelection() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  if (!els.itemDescriptionEditor.contains(range.commonAncestorContainer)) return;
+  state.richSelection = range.cloneRange();
+}
+
+function restoreRichSelection() {
+  if (!state.richSelection) return;
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(state.richSelection);
+}
+
+function setRichDescription(value) {
+  const safeHtml = sanitizeRichText(value);
+  els.itemDescriptionEditor.innerHTML = safeHtml;
+  els.itemDescription.value = safeHtml;
+}
+
+function syncRichDescription() {
+  els.itemDescription.value = sanitizeRichText(els.itemDescriptionEditor.innerHTML);
 }
 
 function bindItemActions() {
@@ -627,7 +712,7 @@ function openItemDialog(item = null) {
   els.itemImportance.value = item?.importance || "media";
   els.itemCategory.value = item?.category || "";
   els.itemSubcategory.value = item?.subcategory || "";
-  els.itemDescription.value = item?.description || "";
+  setRichDescription(item?.description || "");
   els.itemFiles.value = "";
   renderFilePreview();
   els.itemDialog.showModal();
@@ -654,6 +739,7 @@ async function saveItem(event) {
   formData.set("importance", els.itemImportance.value);
   formData.set("category", els.itemCategory.value);
   formData.set("subcategory", els.itemSubcategory.value);
+  syncRichDescription();
   formData.set("description", els.itemDescription.value);
   state.files.forEach((file) => formData.append("attachments", file));
 
@@ -1088,7 +1174,7 @@ function openItemDetail(item) {
       <span><strong>Creador</strong>${escapeHtml(item.createdBy?.name || "-")}</span>
     </div>
     <h2>${escapeHtml(item.subject)}</h2>
-    <p class="detail-description">${escapeHtml(item.description || "Sin descripcion")}</p>
+    <div class="detail-description rich-content">${sanitizeRichText(item.description || "Sin descripcion")}</div>
     ${attachments.length ? `<div class="file-preview">${attachments.map(attachmentLink).join("")}</div>` : `<p class="muted">Sin adjuntos.</p>`}
   `;
   els.itemDetailDialog.showModal();
@@ -1192,6 +1278,55 @@ function unique(values) {
 
 function labelImportance(value) {
   return { alta: "Alta", media: "Media", baja: "Baja" }[value] || value;
+}
+
+function sanitizeRichText(value) {
+  const template = document.createElement("template");
+  template.innerHTML = String(value || "");
+  const allowedTags = new Set(["B", "STRONG", "I", "EM", "U", "P", "DIV", "BR", "UL", "OL", "LI", "H3", "H4", "SPAN", "MARK"]);
+  const allowedStyles = new Set(["color", "background-color", "font-size", "font-family"]);
+
+  template.content.querySelectorAll("*").forEach((node) => {
+    if (!allowedTags.has(node.tagName)) {
+      node.replaceWith(document.createTextNode(node.textContent || ""));
+      return;
+    }
+
+    [...node.attributes].forEach((attribute) => {
+      if (attribute.name !== "style") {
+        node.removeAttribute(attribute.name);
+        return;
+      }
+
+      const safeStyles = [];
+      node.getAttribute("style")
+        .split(";")
+        .map((style) => style.trim())
+        .filter(Boolean)
+        .forEach((style) => {
+          const [property, rawValue] = style.split(":").map((part) => part.trim());
+          if (!allowedStyles.has(property)) return;
+          const isSafeColor = /^#[0-9a-f]{3,8}$/i.test(rawValue) || /^rgb(a)?\([\d\s,%.]+\)$/i.test(rawValue);
+          const isSafeFontSize = /^(14px|18px|22px)$/i.test(rawValue);
+          const isSafeFontFamily = /^(Arial, sans-serif|Georgia, serif|'Courier New', monospace)$/i.test(rawValue);
+          if (["color", "background-color"].includes(property) && !isSafeColor) return;
+          if (property === "font-size" && !isSafeFontSize) return;
+          if (property === "font-family" && !isSafeFontFamily) return;
+          safeStyles.push(`${property}: ${rawValue}`);
+        });
+
+      if (safeStyles.length) node.setAttribute("style", safeStyles.join("; "));
+      else node.removeAttribute("style");
+    });
+  });
+
+  return template.innerHTML.trim();
+}
+
+function plainTextFromHtml(value) {
+  const template = document.createElement("template");
+  template.innerHTML = sanitizeRichText(value);
+  return template.content.textContent?.trim() || "";
 }
 
 function avatarMarkup(user) {
