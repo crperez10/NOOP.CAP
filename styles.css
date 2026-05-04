@@ -716,7 +716,6 @@ body.light .icon-button.lamp-button img {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(22px) saturate(140%);
-  min-height: 212px;
   display: grid;
   align-content: start;
   overflow: hidden;
@@ -735,7 +734,6 @@ body.light .icon-button.lamp-button img {
   margin: 0 0 16px;
   color: var(--muted);
   line-height: 1.7;
-  min-height: 54px;
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
@@ -757,7 +755,6 @@ body.light .icon-button.lamp-button img {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 0 0 16px;
-  min-height: 78px;
 }
 
 .credential-field {

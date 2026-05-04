@@ -358,15 +358,16 @@ function renderClientDetail(client) {
 
   els.clientDetailPanel.hidden = false;
   const isAdmin = canModifyData();
+  const credentials = [
+    client.validatorUser ? credentialField("Usuario", client.validatorUser, isAdmin) : "",
+    client.validatorPassword ? credentialField("Contraseña", client.validatorPassword, isAdmin) : "",
+  ].filter(Boolean).join("");
   els.clientDetailPanel.innerHTML = `
     <div>
       <p class="eyebrow">Datos generales</p>
       <h3>${escapeHtml(client.name)}</h3>
       <p class="client-description">${escapeHtml(client.notes || "-")}</p>
-      <div class="client-credential-grid">
-        ${client.validatorUser ? credentialField("Usuario", client.validatorUser, isAdmin) : ""}
-        ${client.validatorPassword ? credentialField("Contraseña", client.validatorPassword, isAdmin) : ""}
-      </div>
+      ${credentials ? `<div class="client-credential-grid">${credentials}</div>` : ""}
       <div class="client-detail-actions">
         <button class="secondary-button" type="button" data-client-detail-action>Datos del cliente</button>
         ${client.validatorUrl ? `<a class="secondary-button validator-button" href="${escapeHtml(client.validatorUrl)}" target="_blank" rel="noopener noreferrer">Validador</a>` : ""}
