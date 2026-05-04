@@ -711,6 +711,22 @@ body.light .icon-button.lamp-button img {
   letter-spacing: 0;
 }
 
+.page-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.page-brand img {
+  width: clamp(42px, 5vw, 62px);
+  height: clamp(42px, 5vw, 62px);
+  object-fit: contain;
+}
+
+body.light .page-brand img {
+  filter: invert(1);
+}
+
 .client-detail-panel {
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
@@ -740,6 +756,49 @@ body.light .icon-button.lamp-button img {
 
 .validator-button {
   text-decoration: none;
+}
+
+.client-credential-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.credential-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.credential-field strong {
+  grid-column: 1 / -1;
+  color: var(--text);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.credential-field code {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-input-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 8px;
+}
+
+.copy-input-field label {
+  margin-bottom: 0;
 }
 
 .filters-panel {
@@ -1014,7 +1073,13 @@ body.light .favorite-button.active {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 760px;
+  min-width: 840px;
+}
+
+th.subject-col,
+td.subject-cell {
+  width: 30%;
+  min-width: 260px;
 }
 
 th,
@@ -1029,6 +1094,16 @@ th {
   color: var(--muted);
   font-size: 0.76rem;
   text-transform: uppercase;
+}
+
+.table-sort {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-transform: inherit;
 }
 
 tbody tr:last-child td {

@@ -28,6 +28,8 @@ const clientSchema = new mongoose.Schema(
     address: { type: String, default: "" },
     contractType: { type: String, default: "" },
     validatorUrl: { type: String, default: "" },
+    validatorUser: { type: String, default: "" },
+    validatorPassword: { type: String, default: "" },
     contacts: [contactSchema],
     attachments: [attachmentSchema],
     notes: { type: String, default: "" },

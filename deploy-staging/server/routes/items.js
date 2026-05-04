@@ -10,7 +10,7 @@ itemsRouter.use(requireAuth);
 
 itemsRouter.get("/", async (req, res) => {
   const query = await buildItemQuery(req.query);
-  const sort = req.query.sort === "importance" ? importanceSort() : alphaSort();
+  const sort = itemSort(req.query.sort, req.query.direction);
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 50);
 
@@ -196,11 +196,10 @@ function serializeItem(item) {
   };
 }
 
-function importanceSort() {
-  return { favorite: -1, importanceRank: 1, subject: 1, date: -1, createdAt: -1 };
-}
-
-function alphaSort() {
+function itemSort(sort, direction) {
+  const dir = direction === "asc" ? 1 : -1;
+  if (sort === "importance") return { favorite: -1, importanceRank: dir, subject: 1, date: -1, createdAt: -1 };
+  if (sort === "date") return { favorite: -1, date: dir, subject: 1, createdAt: -1 };
   return { favorite: -1, subject: 1, date: -1, createdAt: -1 };
 }
 

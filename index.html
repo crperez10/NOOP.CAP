@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/assets/contrast.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/styles.css?v=20260503-edit-multi-client" />
-    <title>CP Workspace</title>
+    <link rel="icon" href="/assets/favicon.ico" sizes="any" />
+    <link rel="stylesheet" href="/styles.css?v=20260504-noop-updates" />
+    <title>NOOP.CAP</title>
   </head>
   <body>
     <section id="login-view" class="login-view" hidden>
       <form id="native-login-form" class="login-card">
         <div class="login-heading">
-          <p class="eyebrow">CP Workspace</p>
+          <p class="eyebrow">NOOP.CAP</p>
           <h1>Don't break anything. I'm watching you.</h1>
         </div>
         <label>Email<input id="native-login-email" type="email" placeholder="Email" autocomplete="email" /></label>
@@ -58,7 +58,10 @@
         <section id="client-detail-panel" class="client-detail-panel" hidden></section>
         <section class="page-heading" id="page-heading">
           <p class="eyebrow">Client Data</p>
-          <h1>CP Workspace =D</h1>
+          <div class="page-brand">
+            <img src="/assets/noop-logo-white-transparent.png" alt="" />
+            <h1>NOOP.CAP</h1>
+          </div>
         </section>
 
         <section class="filters-panel">
@@ -102,12 +105,12 @@
           <table>
             <thead>
               <tr>
-                <th>Asunto</th>
+                <th class="subject-col">Asunto</th>
                 <th>Cliente</th>
                 <th>Categoria</th>
-                <th>Fecha</th>
-                <th>Importancia</th>
-                <th>Creado por</th>
+                <th><button class="table-sort" type="button" data-table-sort="date">Fecha</button></th>
+                <th><button class="table-sort" type="button" data-table-sort="importance">Importancia</button></th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="items-tbody"></tbody>
@@ -134,18 +137,17 @@
         <div class="client-form-grid">
           <label>Nombre del cliente<input id="client-name" name="name" placeholder="Ej: ATSA" required /></label>
           <label>Rubro<input id="client-industry" name="industry" placeholder="Ej: Obra social" /></label>
-          <label class="wide-field">Direccion<input id="client-address" name="address" placeholder="Direccion principal" /></label>
           <label>Tipo de contrato<input id="client-contract-type" name="contractType" placeholder="Contrato" /></label>
           <label class="wide-field">URL del validador<input id="client-validator-url" name="validatorUrl" type="url" placeholder="https://sitio-del-validador.com" /></label>
-        </div>
-      </section>
-      <section class="client-form-section">
-        <h4>Contacto principal</h4>
-        <div class="client-form-grid">
-          <label>Nombre<input id="client-contact-name" name="contactName" placeholder="Nombre" /></label>
-          <label>Rol<input id="client-contact-role" name="contactRole" placeholder="Rol" /></label>
-          <label>Email<input id="client-contact-email" name="contactEmail" placeholder="Email" /></label>
-          <label>Telefono<input id="client-contact-phone" name="contactPhone" placeholder="Telefono" /></label>
+          <div class="copy-input-field">
+            <label>Usuario validador<input id="client-validator-user" name="validatorUser" placeholder="Usuario" /></label>
+            <button class="ghost-button" type="button" data-copy-client-field="client-validator-user">Copiar</button>
+          </div>
+          <div class="copy-input-field">
+            <label>Contraseña validador<input id="client-validator-password" name="validatorPassword" type="password" placeholder="Contraseña" /></label>
+            <button class="ghost-button" type="button" data-copy-client-field="client-validator-password">Copiar</button>
+            <button class="ghost-button" type="button" data-toggle-client-field="client-validator-password">Ver</button>
+          </div>
         </div>
       </section>
       <section class="client-form-section">
@@ -369,6 +371,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260503-edit-multi-client" defer></script>
+    <script src="/app.js?v=20260504-noop-updates" defer></script>
   </body>
 </html>

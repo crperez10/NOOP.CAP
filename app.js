@@ -8,6 +8,7 @@ const state = {
   selectedImportance: [],
   clientSearch: "",
   sort: "alpha",
+  sortDirection: "desc",
   page: 1,
   totalItems: 0,
   pageSize: 10,
@@ -35,6 +36,7 @@ const els = {
   cardsView: document.querySelector("#cards-view"),
   tableView: document.querySelector("#table-view"),
   tbody: document.querySelector("#items-tbody"),
+  tableHead: document.querySelector("thead"),
   loader: document.querySelector("#loader"),
   paginationControls: document.querySelector("#pagination-controls"),
   prevPageBtn: document.querySelector("#prev-page-btn"),
@@ -63,13 +65,10 @@ const els = {
   clientId: document.querySelector("#client-id"),
   clientName: document.querySelector("#client-name"),
   clientIndustry: document.querySelector("#client-industry"),
-  clientAddress: document.querySelector("#client-address"),
   clientContractType: document.querySelector("#client-contract-type"),
   clientValidatorUrl: document.querySelector("#client-validator-url"),
-  clientContactName: document.querySelector("#client-contact-name"),
-  clientContactRole: document.querySelector("#client-contact-role"),
-  clientContactEmail: document.querySelector("#client-contact-email"),
-  clientContactPhone: document.querySelector("#client-contact-phone"),
+  clientValidatorUser: document.querySelector("#client-validator-user"),
+  clientValidatorPassword: document.querySelector("#client-validator-password"),
   clientColor: document.querySelector("#client-color"),
   clientNotes: document.querySelector("#client-notes"),
   clientFiles: document.querySelector("#client-files"),
@@ -162,6 +161,7 @@ function bindEvents() {
   els.clearFiltersBtn.addEventListener("click", clearAdvancedFilters);
   els.prevPageBtn.addEventListener("click", () => goToPage(state.page - 1));
   els.nextPageBtn.addEventListener("click", () => goToPage(state.page + 1));
+  els.tableHead.addEventListener("click", handleTableSort);
   els.cardViewBtn.addEventListener("click", () => setView("cards"));
   els.tableViewBtn.addEventListener("click", () => setView("table"));
   els.themeToggle.addEventListener("click", toggleTheme);
@@ -172,6 +172,7 @@ function bindEvents() {
   els.adminNewClientBtn.addEventListener("click", () => openClientDialog());
   els.clientsAdminList.addEventListener("click", handleClientsAdminClick);
   els.clientForm.addEventListener("submit", saveClient);
+  els.clientForm.addEventListener("click", handleClientFormTools);
   els.clientFiles.addEventListener("change", (event) => setClientFiles([...event.target.files]));
   els.itemForm.addEventListener("submit", saveItem);
   els.userCreateForm.addEventListener("submit", createNativeUser);
@@ -250,6 +251,7 @@ async function loadItems(reset = true) {
     page: String(state.page),
     limit: String(state.pageSize),
     sort: state.sort,
+    direction: state.sortDirection,
   });
 
   if (state.selectedClient) params.set("client", state.selectedClient);
@@ -279,6 +281,17 @@ function goToPage(page) {
   if (nextPage === state.page) return;
   state.page = nextPage;
   loadItems(false);
+}
+
+function handleTableSort(event) {
+  const button = event.target.closest("[data-table-sort]");
+  if (!button) return;
+  const nextSort = button.dataset.tableSort;
+  state.sortDirection = state.sort === nextSort
+    ? (state.sortDirection === "desc" ? "asc" : "desc")
+    : (nextSort === "importance" ? "asc" : "desc");
+  state.sort = nextSort;
+  loadItems(true);
 }
 
 function renderClients() {
@@ -343,20 +356,41 @@ function renderClientDetail(client) {
   }
 
   els.clientDetailPanel.hidden = false;
+  const isAdmin = canModifyData();
   els.clientDetailPanel.innerHTML = `
     <div>
       <p class="eyebrow">Datos generales</p>
       <h3>${escapeHtml(client.name)}</h3>
       <p class="client-description">${escapeHtml(client.notes || "-")}</p>
+      <div class="client-credential-grid">
+        ${client.validatorUser ? credentialField("Usuario", client.validatorUser, isAdmin) : ""}
+        ${client.validatorPassword ? credentialField("Contraseña", client.validatorPassword, isAdmin) : ""}
+      </div>
       <div class="client-detail-actions">
-        ${canModifyData() ? `<button class="secondary-button" type="button" data-client-detail-action>Datos del cliente</button>` : ""}
+        <button class="secondary-button" type="button" data-client-detail-action>Datos del cliente</button>
         ${client.validatorUrl ? `<a class="secondary-button validator-button" href="${escapeHtml(client.validatorUrl)}" target="_blank" rel="noopener noreferrer">Validador</a>` : ""}
       </div>
     </div>
   `;
-  els.clientDetailPanel
-    .querySelector("[data-client-detail-action]")
-    ?.addEventListener("click", () => openClientDialog(client, { readonly: !canModifyData() }));
+  els.clientDetailPanel.querySelector("[data-client-detail-action]")?.addEventListener("click", () => openClientDialog(client, { readonly: !canModifyData() }));
+  els.clientDetailPanel.querySelectorAll("[data-copy-secret]").forEach((button) => {
+    button.addEventListener("click", () => copyText(button.dataset.copySecret));
+  });
+  els.clientDetailPanel.querySelectorAll("[data-toggle-secret]").forEach((button) => {
+    button.addEventListener("click", () => toggleSecret(button));
+  });
+}
+
+function credentialField(label, value, canView) {
+  const displayValue = canView ? value : maskSecret(value);
+  return `
+    <div class="credential-field">
+      <strong>${escapeHtml(label)}</strong>
+      <code data-secret-value="${escapeHtml(value)}" data-secret-visible="${canView ? "true" : "false"}">${escapeHtml(displayValue)}</code>
+      <button class="ghost-button" type="button" data-copy-secret="${escapeHtml(value)}">Copiar</button>
+      <button class="ghost-button" type="button" data-toggle-secret>${canView ? "Ocultar" : "Ver"}</button>
+    </div>
+  `;
 }
 
 function syncPageHeading() {
@@ -410,7 +444,7 @@ function itemCard(item) {
         <span class="chip">${attachments.length} adjuntos</span>
       </div>
       ${attachments.length ? `<div class="file-preview">${attachments.map(attachmentLink).join("")}</div>` : ""}
-      <div class="meta-line">Creado por ${escapeHtml(item.createdBy?.name || "Usuario")} / ${formatDateTime(item.createdAt)}</div>
+      <div class="meta-line">${formatDateTime(item.createdAt)}</div>
       <div class="card-actions">
         <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">
           ${item.favorite ? "Favorito" : "Marcar favorito"}
@@ -427,12 +461,11 @@ function itemRow(item) {
   const client = findClient(item.client);
   return `
     <tr>
-      <td><strong class="table-subject">${escapeHtml(item.subject)}</strong></td>
+      <td class="subject-cell"><strong class="table-subject">${escapeHtml(item.subject)}</strong></td>
       <td>${clientLabel(client)}</td>
       <td>${escapeHtml(item.category)}<div class="muted">${escapeHtml(item.subcategory || "")}</div></td>
       <td>${formatDate(item.date)}</td>
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
-      <td>${escapeHtml(item.createdBy?.name || "-")}</td>
       <td class="table-actions">
         <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">Favorito</button>
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
@@ -577,14 +610,10 @@ function openClientDialog(client = null, options = {}) {
   els.clientId.value = client?.id || "";
   els.clientName.value = client?.name || "";
   els.clientIndustry.value = client?.industry || "";
-  els.clientAddress.value = client?.address || "";
   els.clientContractType.value = client?.contractType || "";
   els.clientValidatorUrl.value = client?.validatorUrl || "";
-  const contact = client?.contacts?.[0] || {};
-  els.clientContactName.value = contact.name || "";
-  els.clientContactRole.value = contact.role || "";
-  els.clientContactEmail.value = contact.email || "";
-  els.clientContactPhone.value = contact.phone || "";
+  els.clientValidatorUser.value = client?.validatorUser || "";
+  els.clientValidatorPassword.value = client?.validatorPassword || "";
   els.clientColor.value = client?.color || "#6d5dfc";
   els.clientNotes.value = client?.notes || "";
   els.clientFiles.value = "";
@@ -600,26 +629,37 @@ function setClientFormReadonly(readonly) {
   els.clientForm.querySelector("button[type='submit']").hidden = readonly;
 }
 
+function handleClientFormTools(event) {
+  const copyButton = event.target.closest("[data-copy-client-field]");
+  if (copyButton) {
+    const field = document.querySelector(`#${copyButton.dataset.copyClientField}`);
+    copyText(field?.value || "");
+    return;
+  }
+
+  const toggleButton = event.target.closest("[data-toggle-client-field]");
+  if (toggleButton) {
+    const field = document.querySelector(`#${toggleButton.dataset.toggleClientField}`);
+    if (!field) return;
+    field.type = field.type === "password" ? "text" : "password";
+    toggleButton.textContent = field.type === "password" ? "Ver" : "Ocultar";
+  }
+}
+
 async function saveClient(event) {
   event.preventDefault();
   if (!canModifyData()) return;
   try {
     const id = els.clientId.value;
-    const contacts = [
-      {
-        name: els.clientContactName.value,
-        role: els.clientContactRole.value,
-        email: els.clientContactEmail.value,
-        phone: els.clientContactPhone.value,
-      },
-    ];
     const payload = new FormData();
     payload.set("name", els.clientName.value);
     payload.set("industry", els.clientIndustry.value);
-    payload.set("address", els.clientAddress.value);
+    payload.set("address", "");
     payload.set("contractType", els.clientContractType.value);
     payload.set("validatorUrl", els.clientValidatorUrl.value);
-    payload.set("contacts", JSON.stringify(contacts));
+    payload.set("validatorUser", els.clientValidatorUser.value);
+    payload.set("validatorPassword", els.clientValidatorPassword.value);
+    payload.set("contacts", JSON.stringify([]));
     payload.set("color", els.clientColor.value);
     payload.set("notes", els.clientNotes.value);
     state.clientFiles.forEach((file) => payload.append("attachments", file));
@@ -665,7 +705,7 @@ function renderClientsAdminList() {
               <div class="client-admin-copy">
                 <strong>${escapeHtml(client.name)}</strong>
                 <span>${escapeHtml(client.industry || "Sin rubro")} / ${client.itemCount || 0} registros</span>
-                <small>${escapeHtml(client.address || "Sin direccion")}</small>
+                <small>${escapeHtml(client.validatorUrl || "Sin validador")}</small>
               </div>
               <div class="admin-row-actions">
                 ${
@@ -1275,6 +1315,29 @@ function unique(values) {
 
 function labelImportance(value) {
   return { alta: "Alta", media: "Media", baja: "Baja" }[value] || value;
+}
+
+function maskSecret(value) {
+  return value ? "•".repeat(Math.min(Math.max(String(value).length, 8), 14)) : "";
+}
+
+function toggleSecret(button) {
+  const field = button.closest(".credential-field");
+  const valueNode = field?.querySelector("[data-secret-value]");
+  if (!valueNode) return;
+  const visible = valueNode.dataset.secretVisible === "true";
+  valueNode.dataset.secretVisible = String(!visible);
+  valueNode.textContent = visible ? maskSecret(valueNode.dataset.secretValue) : valueNode.dataset.secretValue;
+  button.textContent = visible ? "Ver" : "Ocultar";
+}
+
+async function copyText(value) {
+  try {
+    await navigator.clipboard.writeText(value || "");
+    notify("Dato copiado.");
+  } catch {
+    notify("No se pudo copiar el dato.");
+  }
 }
 
 function sanitizeRichText(value) {
