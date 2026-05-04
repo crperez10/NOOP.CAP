@@ -701,6 +701,9 @@ body.light .icon-button.lamp-button img {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(22px) saturate(140%);
+  height: 178px;
+  display: grid;
+  align-content: center;
   padding: 22px 24px;
 }
 
@@ -716,14 +719,20 @@ body.light .icon-button.lamp-button img {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(22px) saturate(140%);
+  height: 178px;
   display: grid;
   align-content: start;
   overflow: hidden;
   contain: layout paint;
 }
 
+.client-detail-panel > div {
+  display: grid;
+  gap: 10px;
+}
+
 .client-detail-panel h3 {
-  margin: 0 0 12px;
+  margin: 0;
   font-size: clamp(1.55rem, 3vw, 2.35rem);
   line-height: 1.04;
   letter-spacing: 0;
@@ -731,7 +740,8 @@ body.light .icon-button.lamp-button img {
 
 .client-description {
   max-width: 760px;
-  margin: 0 0 16px;
+  min-height: 24px;
+  margin: 0;
   color: var(--muted);
   line-height: 1.7;
   display: -webkit-box;
@@ -744,6 +754,7 @@ body.light .icon-button.lamp-button img {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-top: 2px;
 }
 
 .validator-button {
@@ -1005,6 +1016,20 @@ body.light .favorite-button.active {
   color: #101522;
 }
 
+.favorite-marker {
+  min-width: 36px;
+  min-height: 36px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: var(--radius);
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.16);
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .icon-button {
   width: 40px;
   padding: 0;
@@ -1109,10 +1134,11 @@ th {
 }
 
 .sort-indicator {
-  width: 12px;
+  width: 18px;
   display: inline-block;
   color: var(--primary-2);
-  font-size: 0.85rem;
+  font-size: 1.25rem;
+  font-weight: 900;
   line-height: 1;
   text-align: center;
 }

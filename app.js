@@ -357,17 +357,11 @@ function renderClientDetail(client) {
   }
 
   els.clientDetailPanel.hidden = false;
-  const isAdmin = canModifyData();
-  const credentials = [
-    client.validatorUser ? credentialField("Usuario", client.validatorUser, isAdmin) : "",
-    client.validatorPassword ? credentialField("Contraseña", client.validatorPassword, isAdmin) : "",
-  ].filter(Boolean).join("");
   els.clientDetailPanel.innerHTML = `
     <div>
       <p class="eyebrow">Datos generales</p>
       <h3>${escapeHtml(client.name)}</h3>
       <p class="client-description">${escapeHtml(client.notes || "-")}</p>
-      ${credentials ? `<div class="client-credential-grid">${credentials}</div>` : ""}
       <div class="client-detail-actions">
         <button class="secondary-button" type="button" data-client-detail-action>Datos del cliente</button>
         ${client.validatorUrl ? `<a class="secondary-button validator-button" href="${escapeHtml(client.validatorUrl)}" target="_blank" rel="noopener noreferrer">Validador</a>` : ""}
@@ -461,8 +455,9 @@ function itemCard(item) {
       <div class="meta-line">${formatDateTime(item.createdAt)}</div>
       <div class="card-actions">
         <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">
-          ${item.favorite ? "Favorito" : "Marcar favorito"}
+          ${item.favorite ? "Favorito &#9733;" : "Marcar favorito"}
         </button>
+        ${favoriteMarker(item)}
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="secondary-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>
@@ -481,13 +476,19 @@ function itemRow(item) {
       <td>${formatDate(item.date)}</td>
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td class="table-actions">
-        <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">Favorito</button>
+        <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">${item.favorite ? "Favorito &#9733;" : "Favorito"}</button>
+        ${favoriteMarker(item)}
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="ghost-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>
       </td>
     </tr>
   `;
+}
+
+function favoriteMarker(item) {
+  if (!item.favorite) return "";
+  return `<span class="favorite-marker" title="Registro favorito" aria-label="Registro favorito">&#9733;</span>`;
 }
 
 function clientLabel(client) {
