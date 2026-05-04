@@ -728,12 +728,9 @@ async function saveItem(event) {
     notify("Selecciona al menos un cliente.");
     return;
   }
-  if (id && selectedClients.length > 1) {
-    notify("Al editar, selecciona un solo cliente.");
-    return;
-  }
-  formData.set("client", selectedClients[0]);
-  if (!id) formData.set("clients", JSON.stringify(selectedClients));
+  const primaryClient = id && selectedClients.includes(String(state.editingItem?.client)) ? state.editingItem.client : selectedClients[0];
+  formData.set("client", primaryClient);
+  formData.set("clients", JSON.stringify(selectedClients));
   formData.set("subject", els.itemSubject.value);
   formData.set("date", els.itemDate.value);
   formData.set("importance", els.itemImportance.value);
@@ -749,7 +746,7 @@ async function saveItem(event) {
   });
 
   els.itemDialog.close();
-  notify(selectedClients.length > 1 && !id ? "Registros guardados." : "Registro guardado.");
+  notify(selectedClients.length > 1 ? "Registros guardados." : "Registro guardado.");
   await refreshWorkspaceData();
 }
 

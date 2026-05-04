@@ -62,9 +62,16 @@ itemsRouter.post("/", requireRole("admin"), upload.array("attachments"), async (
 });
 
 itemsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), async (req, res) => {
+  const clientIds = itemClientIds(req.body);
+  if (!clientIds.length) return res.status(400).json({ message: "Selecciona al menos un cliente." });
+
+  const primaryClient = req.body.client || clientIds[0];
+  const sourceItem = await Item.findById(req.params.id);
+  if (!sourceItem) return res.status(404).json({ message: "Registro no encontrado." });
+
   const update = {
     $set: {
-      client: req.body.client,
+      client: primaryClient,
       subject: req.body.subject,
       date: req.body.date,
       importance: req.body.importance,
@@ -85,8 +92,45 @@ itemsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), asy
     runValidators: true,
   }).populate("createdBy", "name email avatar role");
 
-  if (!item) return res.status(404).json({ message: "Registro no encontrado." });
-  res.json({ item: serializeItem(item) });
+  const extraClients = clientIds.filter((client) => String(client) !== String(primaryClient));
+  const existingCopies = extraClients.length
+    ? await Item.find({
+        _id: { $ne: req.params.id },
+        client: { $in: extraClients },
+        subject: req.body.subject,
+        category: req.body.category,
+        date: new Date(req.body.date),
+      }).select("client")
+    : [];
+  const existingClientIds = new Set(existingCopies.map((entry) => String(entry.client)));
+  const clientsToCreate = extraClients.filter((client) => !existingClientIds.has(String(client)));
+  const createdItems = clientsToCreate.length
+    ? await Item.create(
+        clientsToCreate.map((client) => ({
+          client,
+          subject: req.body.subject,
+          date: req.body.date,
+          importance: req.body.importance,
+          importanceRank: toImportanceRank(req.body.importance),
+          category: req.body.category,
+          subcategory: req.body.subcategory,
+          description: req.body.description,
+          attachments: item.attachments.map(plainAttachment),
+          favorite: false,
+          createdBy: req.user._id,
+        }))
+      )
+    : [];
+
+  const populatedCreatedItems = createdItems.length
+    ? await Item.find({ _id: { $in: createdItems.map((entry) => entry._id) } }).populate("createdBy", "name email avatar role")
+    : [];
+
+  res.json({
+    item: serializeItem(item),
+    items: [item, ...populatedCreatedItems].map(serializeItem),
+    count: 1 + populatedCreatedItems.length,
+  });
 });
 
 itemsRouter.patch("/:id/favorite", requireRole("admin"), async (req, res) => {
@@ -194,6 +238,16 @@ function itemClientIds(body) {
   }
 
   return [...new Set(clients.map((client) => String(client).trim()).filter(Boolean))];
+}
+
+function plainAttachment(attachment) {
+  return {
+    originalName: attachment.originalName,
+    storedName: attachment.storedName,
+    mimeType: attachment.mimeType,
+    size: attachment.size,
+    url: attachment.url,
+  };
 }
 
 function exactRegex(value) {
