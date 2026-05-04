@@ -200,7 +200,7 @@ function itemSort(sort, direction) {
   const dir = direction === "asc" ? 1 : -1;
   if (sort === "importance") return { favorite: -1, importanceRank: dir, subject: 1, date: -1, createdAt: -1 };
   if (sort === "date") return { favorite: -1, date: dir, subject: 1, createdAt: -1 };
-  return { favorite: -1, subject: 1, date: -1, createdAt: -1 };
+  return { favorite: -1, subject: dir, date: -1, createdAt: -1 };
 }
 
 function escapeRegExp(value) {

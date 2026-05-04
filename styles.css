@@ -711,22 +711,6 @@ body.light .icon-button.lamp-button img {
   letter-spacing: 0;
 }
 
-.page-brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.page-brand img {
-  width: clamp(42px, 5vw, 62px);
-  height: clamp(42px, 5vw, 62px);
-  object-fit: contain;
-}
-
-body.light .page-brand img {
-  filter: invert(1);
-}
-
 .client-detail-panel {
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
@@ -1117,6 +1101,23 @@ th {
   background: transparent;
   font: inherit;
   text-transform: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+}
+
+.table-sort.active {
+  color: var(--text);
+}
+
+.sort-indicator {
+  width: 12px;
+  display: inline-block;
+  color: var(--primary-2);
+  font-size: 0.85rem;
+  line-height: 1;
+  text-align: center;
 }
 
 tbody tr:last-child td {

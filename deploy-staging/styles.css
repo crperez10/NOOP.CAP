@@ -1117,6 +1117,23 @@ th {
   background: transparent;
   font: inherit;
   text-transform: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: auto;
+}
+
+.table-sort.active {
+  color: var(--text);
+}
+
+.sort-indicator {
+  width: 12px;
+  display: inline-block;
+  color: var(--primary-2);
+  font-size: 0.85rem;
+  line-height: 1;
+  text-align: center;
 }
 
 tbody tr:last-child td {

@@ -8,7 +8,7 @@ const state = {
   selectedImportance: [],
   clientSearch: "",
   sort: "alpha",
-  sortDirection: "desc",
+  sortDirection: "asc",
   page: 1,
   totalItems: 0,
   pageSize: 10,
@@ -291,6 +291,7 @@ function handleTableSort(event) {
     ? (state.sortDirection === "desc" ? "asc" : "desc")
     : (nextSort === "importance" ? "asc" : "desc");
   state.sort = nextSort;
+  syncSortIndicators();
   loadItems(true);
 }
 
@@ -400,6 +401,7 @@ function syncPageHeading() {
 function renderItems(total = state.items.length) {
   els.resultCount.textContent = `${total} ${total === 1 ? "registro" : "registros"}`;
   syncPagination();
+  syncSortIndicators();
 
   if (!state.items.length) {
     els.cardsView.innerHTML = `<article class="record-card"><h3>No hay registros</h3><p class="muted">Crea el primer item o ajusta los filtros.</p></article>`;
@@ -411,6 +413,17 @@ function renderItems(total = state.items.length) {
   els.tbody.innerHTML = state.items.map(itemRow).join("");
   bindItemActions();
   if (state.user) syncRoleUI();
+}
+
+function syncSortIndicators() {
+  document.querySelectorAll("[data-table-sort]").forEach((button) => {
+    const active = button.dataset.tableSort === state.sort;
+    const arrow = state.sortDirection === "asc" ? "↑" : "↓";
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-sort", active ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none");
+    const indicator = button.querySelector(".sort-indicator");
+    if (indicator) indicator.textContent = active ? arrow : "";
+  });
 }
 
 function syncPagination() {
