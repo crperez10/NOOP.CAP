@@ -701,7 +701,7 @@ body.light .icon-button.lamp-button img {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(22px) saturate(140%);
-  height: 178px;
+  height: 192px;
   display: grid;
   align-content: center;
   padding: 22px 24px;
@@ -719,7 +719,7 @@ body.light .icon-button.lamp-button img {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
   box-shadow: var(--shadow);
   backdrop-filter: blur(22px) saturate(140%);
-  height: 178px;
+  height: 192px;
   display: grid;
   align-content: start;
   overflow: hidden;
