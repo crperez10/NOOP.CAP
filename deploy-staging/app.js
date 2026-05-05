@@ -125,7 +125,7 @@ const els = {
   itemDetailContent: document.querySelector("#item-detail-content"),
   guestLoginBtn: document.querySelector("#guest-login-btn"),
   nativeLoginForm: document.querySelector("#native-login-form"),
-  nativeLoginEmail: document.querySelector("#native-login-email"),
+  nativeLoginUser: document.querySelector("#native-login-user"),
   nativeLoginPassword: document.querySelector("#native-login-password"),
 };
 
@@ -140,6 +140,7 @@ async function boot() {
 
   if (!state.user) {
     els.loginView.hidden = false;
+    await loadLoginUsers();
     return;
   }
 
@@ -1206,11 +1207,23 @@ async function nativeLogin(event) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      email: els.nativeLoginEmail.value,
+      email: els.nativeLoginUser.value,
       password: els.nativeLoginPassword.value,
     }),
   });
   await enterWorkspace(data.user);
+}
+
+async function loadLoginUsers() {
+  try {
+    const data = await api("/api/auth/login-users", { authOptional: true, fresh: true });
+    els.nativeLoginUser.innerHTML = [
+      `<option value="">Seleccionar usuario</option>`,
+      ...data.users.map((user) => `<option value="${escapeHtml(user.email)}">${escapeHtml(user.name)}</option>`),
+    ].join("");
+  } catch {
+    els.nativeLoginUser.innerHTML = `<option value="">No se pudieron cargar usuarios</option>`;
+  }
 }
 
 function toggleHamburgerMenu(event) {
@@ -1321,11 +1334,15 @@ function openItemDetail(item) {
   if (!item) return;
   const client = findClient(item.client);
   const attachments = item.attachments || [];
+  const creatorDetail = state.user?.role === "admin"
+    ? `<span><strong>Creador</strong>${escapeHtml(item.createdBy?.name || "-")}</span>`
+    : "";
   els.itemDetailContent.innerHTML = `
     <div class="detail-grid">
       <span><strong>Cliente</strong>${clientLabel(client)}</span>
       <span><strong>Fecha de creacion</strong>${formatDateTime(item.createdAt)}</span>
       <span><strong>Importancia</strong><em class="chip importance-${escapeHtml(item.importance)}">${labelImportance(item.importance)}</em></span>
+      ${creatorDetail}
     </div>
     <h2>${escapeHtml(item.subject)}</h2>
     <div class="detail-description rich-content">${sanitizeRichText(item.description || "Sin descripcion")}</div>

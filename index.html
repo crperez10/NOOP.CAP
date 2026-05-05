@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260505-table-client-fixes" />
+    <link rel="stylesheet" href="/styles.css?v=20260505-login-user-select" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -14,7 +14,7 @@
           <p class="eyebrow">NOOP.CAP</p>
           <h1>Don't break anything. I'm watching you.</h1>
         </div>
-        <label>Email<input id="native-login-email" type="email" placeholder="Email" autocomplete="email" /></label>
+        <label>Usuario<select id="native-login-user" autocomplete="username"><option value="">Seleccionar usuario</option></select></label>
         <label>Password<input id="native-login-password" type="password" placeholder="Password" autocomplete="current-password" /></label>
         <div class="login-actions">
           <button class="primary-button" type="submit">Ingresar</button>
@@ -365,6 +365,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260505-table-client-fixes" defer></script>
+    <script src="/app.js?v=20260505-login-user-select" defer></script>
   </body>
 </html>
