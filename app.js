@@ -7,6 +7,7 @@ const state = {
   selectedCategories: [],
   selectedSubcategories: [],
   selectedImportance: [],
+  selectedCreators: [],
   clientSearch: "",
   sort: "alpha",
   sortDirection: "asc",
@@ -52,6 +53,7 @@ const els = {
   keywordFilter: document.querySelector("#keyword-filter"),
   categoryOptions: document.querySelector("#category-options"),
   subcategoryOptions: document.querySelector("#subcategory-options"),
+  creatorOptions: document.querySelector("#creator-options"),
   fromFilter: document.querySelector("#from-filter"),
   toFilter: document.querySelector("#to-filter"),
   filterMenuBtn: document.querySelector("#filter-menu-btn"),
@@ -148,6 +150,7 @@ async function boot() {
 
   els.app.hidden = false;
   syncRoleUI();
+  if (state.user?.role === "admin") await loadAdminUsers();
   await loadWorkspaceData();
 }
 
@@ -269,6 +272,7 @@ async function loadItems(reset = true) {
   if (state.selectedCategories.length) params.set("category", state.selectedCategories.join(","));
   if (state.selectedSubcategories.length) params.set("subcategory", state.selectedSubcategories.join(","));
   if (state.selectedImportance.length) params.set("importance", state.selectedImportance.join(","));
+  if (state.user?.role === "admin" && state.selectedCreators.length) params.set("creator", state.selectedCreators.join(","));
   if (els.fromFilter.value) params.set("from", els.fromFilter.value);
   if (els.toFilter.value) params.set("to", els.toFilter.value);
 
@@ -528,10 +532,15 @@ function attachmentLink(file) {
 function updateFilterOptions() {
   const categories = unique(state.items.map((item) => item.category));
   const subcategories = unique(state.items.map((item) => item.subcategory));
+  const creators = state.users
+    .filter((user) => user.role !== "viewer")
+    .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "es", { sensitivity: "base" }));
   state.selectedCategories = state.selectedCategories.filter((value) => categories.includes(value));
   state.selectedSubcategories = state.selectedSubcategories.filter((value) => subcategories.includes(value));
+  state.selectedCreators = state.selectedCreators.filter((value) => creators.some((user) => user.id === value));
   renderCheckboxOptions(els.categoryOptions, "category-filter", categories, state.selectedCategories);
   renderCheckboxOptions(els.subcategoryOptions, "subcategory-filter", subcategories, state.selectedSubcategories);
+  renderCreatorOptions(creators);
   updateFilterButtonLabel();
 }
 
@@ -543,6 +552,22 @@ function renderCheckboxOptions(container, name, values, selectedValues) {
             <label>
               <input type="checkbox" name="${name}" value="${escapeHtml(value)}" ${selectedValues.includes(value) ? "checked" : ""} />
               ${escapeHtml(value)}
+            </label>
+          `
+        )
+        .join("")
+    : `<span class="muted">Sin opciones</span>`;
+}
+
+function renderCreatorOptions(creators) {
+  if (!els.creatorOptions) return;
+  els.creatorOptions.innerHTML = creators.length
+    ? creators
+        .map(
+          (user) => `
+            <label>
+              <input type="checkbox" name="creator-filter" value="${escapeHtml(user.id)}" ${state.selectedCreators.includes(user.id) ? "checked" : ""} />
+              ${escapeHtml(user.name)}
             </label>
           `
         )
@@ -934,9 +959,8 @@ async function openUsersDialog() {
     return;
   }
 
-  const data = await api("/api/auth/users");
-  state.users = data.users;
-  els.usersList.innerHTML = data.users
+  const users = await loadAdminUsers();
+  els.usersList.innerHTML = users
     .map(
       (user) => `
         <article class="user-admin-row">
@@ -954,7 +978,7 @@ async function openUsersDialog() {
     .join("");
 
   els.usersList.querySelectorAll("[data-user-edit]").forEach((button) => {
-    button.addEventListener("click", () => openUserEditDialog(data.users.find((user) => user.id === button.dataset.userEdit)));
+    button.addEventListener("click", () => openUserEditDialog(users.find((user) => user.id === button.dataset.userEdit)));
   });
   els.usersList.querySelectorAll("[data-user-delete]").forEach((button) => {
     button.addEventListener("click", () => deleteUser(button.dataset.userDelete));
@@ -964,6 +988,14 @@ async function openUsersDialog() {
   });
 
   if (!els.usersDialog.open) els.usersDialog.showModal();
+}
+
+async function loadAdminUsers() {
+  if (state.user?.role !== "admin") return [];
+  const data = await api("/api/auth/users", { fresh: true });
+  state.users = data.users;
+  updateFilterOptions();
+  return data.users;
 }
 
 function openUserEditDialog(user) {
@@ -1219,6 +1251,7 @@ async function enterWorkspace(user) {
     syncRoleUI();
   }
 
+  if (state.user?.role === "admin") await loadAdminUsers();
   await refreshWorkspaceData();
 }
 
@@ -1301,6 +1334,7 @@ function handleFilterChange() {
   state.selectedImportance = checkedValues("importance-filter");
   state.selectedCategories = checkedValues("category-filter");
   state.selectedSubcategories = checkedValues("subcategory-filter");
+  state.selectedCreators = state.user?.role === "admin" ? checkedValues("creator-filter") : [];
   updateFilterButtonLabel();
   loadItems(true);
 }
@@ -1310,6 +1344,7 @@ function clearAdvancedFilters() {
   state.selectedImportance = [];
   state.selectedCategories = [];
   state.selectedSubcategories = [];
+  state.selectedCreators = [];
   resetTableOrderState();
   updateFilterButtonLabel();
   loadItems(true);
@@ -1324,6 +1359,7 @@ function resetTableFilters(event) {
   state.selectedImportance = [];
   state.selectedCategories = [];
   state.selectedSubcategories = [];
+  state.selectedCreators = [];
   resetTableOrderState();
   state.page = 1;
   updateFilterButtonLabel();
@@ -1343,7 +1379,7 @@ function checkedValues(name) {
 }
 
 function updateFilterButtonLabel() {
-  const total = state.selectedImportance.length + state.selectedCategories.length + state.selectedSubcategories.length;
+  const total = state.selectedImportance.length + state.selectedCategories.length + state.selectedSubcategories.length + state.selectedCreators.length;
   els.filterMenuBtn.textContent = total ? `Filtros (${total})` : "Filtros";
 }
 

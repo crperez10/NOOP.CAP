@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Client } from "../models/Client.js";
 import { Item } from "../models/Item.js";
@@ -9,7 +10,7 @@ export const itemsRouter = express.Router();
 itemsRouter.use(requireAuth);
 
 itemsRouter.get("/", async (req, res) => {
-  const query = await buildItemQuery(req.query);
+  const query = await buildItemQuery(req.query, req.user);
   const sort = itemSort(req.query.sort, req.query.direction);
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 50);
@@ -174,10 +175,16 @@ itemsRouter.delete("/:id", requireRole("admin"), async (req, res) => {
   res.json({ ok: true });
 });
 
-async function buildItemQuery(params) {
+async function buildItemQuery(params, user) {
   const query = {};
 
   if (params.client) query.client = params.client;
+  if (params.creator && user?.role === "admin") {
+    const creatorIds = toList(params.creator)
+      .filter((id) => mongoose.Types.ObjectId.isValid(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
+    if (creatorIds.length) query.createdBy = { $in: creatorIds };
+  }
   if (params.importance) query.importance = { $in: toList(params.importance) };
   if (params.category) query.category = { $in: toList(params.category).map((value) => exactRegex(value)) };
   if (params.subcategory) query.subcategory = { $in: toList(params.subcategory).map((value) => exactRegex(value)) };
