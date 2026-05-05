@@ -637,16 +637,19 @@ function openClientDialog(client = null, options = {}) {
   state.clientFiles = [];
   const clientFormTitle = els.clientForm.querySelector("h3");
   if (clientFormTitle) clientFormTitle.textContent = readonly ? "Datos del cliente" : "Cliente";
+  const validatorAccesses = client?.validatorAccesses || legacyValidatorAccesses(client);
+  const hasSavedValidatorAccesses = validatorAccesses.some((access) => access.title || access.url || access.user || access.password);
   els.clientId.value = client?.id || "";
   els.clientName.value = client?.name || "";
   els.clientContractType.value = client?.contractType || "";
-  renderValidatorAccessRows(client?.validatorAccesses || legacyValidatorAccesses(client));
+  renderValidatorAccessRows(validatorAccesses);
   els.clientColor.value = client?.color || "#6d5dfc";
   els.clientNotes.value = client?.notes || "";
   els.clientFiles.value = "";
   setClientFormReadonly(readonly);
   renderClientFilePreview();
   els.clientDialog.showModal();
+  if (!hasSavedValidatorAccesses) clearValidatorAutofillLater();
 }
 
 function setClientFormReadonly(readonly) {
@@ -685,12 +688,12 @@ function validatorAccessRow(access = {}) {
         <button class="ghost-button" type="button" data-remove-validator-access>Quitar</button>
       </div>
       <div class="validator-access-grid">
-        <label>Titulo<input data-validator-field="title" placeholder="Ej: Portal principal" value="${escapeHtml(access.title || "")}" /></label>
-        <label>URL<input data-validator-field="url" type="url" placeholder="https://sitio.com" value="${escapeHtml(access.url || "")}" /></label>
-        <label>Usuario<input data-validator-field="user" placeholder="Usuario" value="${escapeHtml(access.user || "")}" /></label>
+        <label>Titulo<input data-validator-field="title" autocomplete="off" placeholder="Ej: Portal principal" value="${escapeHtml(access.title || "")}" /></label>
+        <label>URL<input data-validator-field="url" type="url" autocomplete="off" placeholder="https://sitio.com" value="${escapeHtml(access.url || "")}" /></label>
+        <label>Usuario<input data-validator-field="user" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Usuario" value="${escapeHtml(access.user || "")}" /></label>
         <label>Contraseña
           <span class="password-inline">
-            <input data-validator-field="password" type="password" placeholder="Contraseña" value="${escapeHtml(access.password || "")}" />
+            <input data-validator-field="password" type="password" autocomplete="new-password" placeholder="Contraseña" value="${escapeHtml(access.password || "")}" />
             <button class="ghost-button icon-eye-button" type="button" data-toggle-client-field="password" aria-label="Mostrar contraseña"><span class="eye-icon"></span></button>
           </span>
         </label>
@@ -701,6 +704,16 @@ function validatorAccessRow(access = {}) {
       </div>
     </article>
   `;
+}
+
+function clearValidatorAutofillLater() {
+  [0, 80, 250, 600].forEach((delay) => {
+    setTimeout(() => {
+      els.validatorAccessList.querySelectorAll("[data-validator-field]").forEach((field) => {
+        field.value = "";
+      });
+    }, delay);
+  });
 }
 
 function readValidatorAccessRows() {
