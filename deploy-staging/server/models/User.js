@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema(
       default: "active",
     },
     lastLoginAt: Date,
+    passwordUpdatedAt: Date,
   },
   { timestamps: true }
 );

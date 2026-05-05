@@ -49,7 +49,7 @@ SESSION_SECRET=un-secreto-largo
 MONGODB_URI=mongodb://127.0.0.1:27017/client-data-admin
 ADMIN_SEED_EMAIL=admin@example.com
 ADMIN_SEED_PASSWORD=change-me
-ADMIN_SEED_NAME=Administrador
+ADMIN_SEED_NAME=Cristian Perez
 SEED_STARTER_CLIENTS=true
 ```
 
@@ -78,7 +78,7 @@ MONGODB_URI=mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/client-data-admin
 SESSION_SECRET=un-secreto-largo-y-seguro
 ADMIN_SEED_EMAIL=tu-admin@example.com
 ADMIN_SEED_PASSWORD=tu-password-seguro
-ADMIN_SEED_NAME=Administrador
+ADMIN_SEED_NAME=Cristian Perez
 SEED_STARTER_CLIENTS=false
 ```
 

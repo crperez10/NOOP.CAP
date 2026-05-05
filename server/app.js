@@ -84,23 +84,36 @@ async function buildApp() {
 async function seedRequestedAdmin() {
   const email = process.env.ADMIN_SEED_EMAIL;
   const password = process.env.ADMIN_SEED_PASSWORD;
-  const name = process.env.ADMIN_SEED_NAME || "Administrador";
+  const name = process.env.ADMIN_SEED_NAME || "Cristian Perez";
 
   if (!email || !password) return;
 
-  await User.findOneAndUpdate(
-    { email: email.toLowerCase() },
-    {
+  const normalizedEmail = email.toLowerCase();
+  const existing = await User.findOne({ email: normalizedEmail });
+
+  if (!existing) {
+    await User.create({
       name,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       avatar: "",
       authProvider: "native",
       passwordHash: await hashPassword(password),
+      passwordUpdatedAt: new Date(),
       role: "admin",
       status: "active",
-    },
-    { new: true, upsert: true, runValidators: true }
-  );
+    });
+    return;
+  }
+
+  existing.role = "admin";
+  existing.authProvider = "native";
+  if (!existing.passwordHash) {
+    existing.passwordHash = await hashPassword(password);
+    existing.passwordUpdatedAt = new Date();
+  }
+  if (!existing.status || existing.status === "pending") existing.status = "active";
+  if (!existing.name || existing.name === "Administrador") existing.name = name;
+  await existing.save();
 }
 
 async function loadSessionUser(req, _res, next) {

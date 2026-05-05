@@ -113,6 +113,7 @@ const els = {
   editUserRole: document.querySelector("#edit-user-role"),
   editUserStatus: document.querySelector("#edit-user-status"),
   editUserPassword: document.querySelector("#edit-user-password"),
+  editUserPasswordMeta: document.querySelector("#edit-user-password-meta"),
   passwordForm: document.querySelector("#password-form"),
   currentPassword: document.querySelector("#current-password"),
   newPassword: document.querySelector("#new-password"),
@@ -352,7 +353,7 @@ function clientButton(client) {
       <span class="client-dot" style="background:${escapeHtml(client.color)}"></span>
       <span class="client-copy">
         <strong>${escapeHtml(client.name)}</strong>
-        <span>${escapeHtml(client.contractType || "Sin contrato")} / ${client.itemCount || 0} registros</span>
+        <span>${client.itemCount || 0} registros</span>
       </span>
     </button>
   `;
@@ -953,6 +954,7 @@ function openUserEditDialog(user) {
   els.editUserRole.value = user.role;
   els.editUserStatus.value = user.status || "active";
   els.editUserPassword.value = "";
+  els.editUserPasswordMeta.textContent = `Ultima modificacion: ${user.passwordUpdatedAt ? formatDateTime(user.passwordUpdatedAt) : "-"}`;
   els.userEditDialog.showModal();
 }
 

@@ -859,6 +859,11 @@ body.light .icon-button.lamp-button img {
   gap: 8px;
 }
 
+.password-admin-field {
+  display: grid;
+  gap: 8px;
+}
+
 .icon-eye-button {
   width: 42px;
   min-height: 42px;

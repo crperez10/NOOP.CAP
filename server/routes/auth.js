@@ -105,6 +105,7 @@ authRouter.patch("/password", requireAuth, requireRole("admin"), async (req, res
   }
 
   user.passwordHash = await hashPassword(newPassword);
+  user.passwordUpdatedAt = new Date();
   if (user.authProvider !== "native") user.authProvider = "native";
   await user.save();
   res.json({ user: serializeUser(user) });
@@ -139,6 +140,7 @@ authRouter.post("/users", requireAuth, requireRole("admin"), async (req, res) =>
       status: "active",
       authProvider: "native",
       passwordHash: role === "viewer" ? "" : await hashPassword(password),
+      passwordUpdatedAt: role === "viewer" ? null : new Date(),
     });
 
     res.status(201).json({ user: serializeUser(user) });
@@ -187,8 +189,14 @@ authRouter.patch("/users/:id", requireAuth, requireRole("admin"), async (req, re
       status,
     };
 
-    if (role === "viewer") update.passwordHash = "";
-    if (role !== "viewer" && password) update.passwordHash = await hashPassword(password);
+    if (role === "viewer") {
+      update.passwordHash = "";
+      update.passwordUpdatedAt = null;
+    }
+    if (role !== "viewer" && password) {
+      update.passwordHash = await hashPassword(password);
+      update.passwordUpdatedAt = new Date();
+    }
 
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
     if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
@@ -221,6 +229,7 @@ function serializeUser(user) {
     role: user.role,
     status: user.status || "active",
     authProvider: user.authProvider,
+    passwordUpdatedAt: user.passwordUpdatedAt || null,
   };
 }
 
