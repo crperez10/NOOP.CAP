@@ -671,6 +671,7 @@ body.light .icon-button.lamp-button img {
   display: grid;
   align-content: start;
   gap: 14px;
+  position: relative;
 }
 
 .topbar,
@@ -1090,8 +1091,21 @@ body.light .favorite-button.active {
 }
 
 .loader {
-  margin-left: 10px;
+  position: absolute;
+  top: 326px;
+  right: 44px;
+  z-index: 12;
+  min-width: 92px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
   color: var(--primary-2);
+  pointer-events: none;
 }
 
 .toolbar {
@@ -1110,6 +1124,12 @@ body.light .favorite-button.active {
   gap: 10px;
   width: fit-content;
   margin-top: 16px;
+  visibility: visible;
+}
+
+.pagination-controls.is-hidden {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .page-status {

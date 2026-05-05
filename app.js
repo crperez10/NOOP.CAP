@@ -429,7 +429,7 @@ function syncSortIndicators() {
 
 function syncPagination() {
   const totalPages = totalPagesForItems();
-  els.paginationControls.hidden = state.totalItems <= state.pageSize;
+  els.paginationControls.classList.toggle("is-hidden", state.totalItems <= state.pageSize);
   els.pageStatus.textContent = `Hoja ${Math.min(state.page, totalPages)} de ${totalPages}`;
   els.prevPageBtn.disabled = state.page <= 1;
   els.nextPageBtn.disabled = state.page >= totalPages;
