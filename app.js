@@ -25,6 +25,9 @@ const ROLE_LABELS = {
   viewer: "Invitado",
 };
 
+const DEFAULT_TABLE_SORT = "alpha";
+const DEFAULT_TABLE_DIRECTION = "asc";
+
 const els = {
   app: document.querySelector("#app"),
   loginView: document.querySelector("#login-view"),
@@ -254,6 +257,7 @@ async function loadItems(reset = true) {
     limit: String(state.pageSize),
     sort: state.sort,
     direction: state.sortDirection,
+    t: String(Date.now()),
   });
 
   if (state.selectedClient) params.set("client", state.selectedClient);
@@ -1184,13 +1188,13 @@ function clearAdvancedFilters() {
   state.selectedImportance = [];
   state.selectedCategories = [];
   state.selectedSubcategories = [];
-  state.sort = "alpha";
-  state.sortDirection = "asc";
+  resetTableOrderState();
   updateFilterButtonLabel();
   loadItems(true);
 }
 
-function resetTableFilters() {
+function resetTableFilters(event) {
+  event?.stopPropagation();
   els.keywordFilter.value = "";
   els.fromFilter.value = "";
   els.toFilter.value = "";
@@ -1198,13 +1202,17 @@ function resetTableFilters() {
   state.selectedImportance = [];
   state.selectedCategories = [];
   state.selectedSubcategories = [];
-  state.sort = "alpha";
-  state.sortDirection = "asc";
+  resetTableOrderState();
   state.page = 1;
   updateFilterButtonLabel();
   closeFilterPopover();
   syncSortIndicators();
   loadItems(true);
+}
+
+function resetTableOrderState() {
+  state.sort = DEFAULT_TABLE_SORT;
+  state.sortDirection = DEFAULT_TABLE_DIRECTION;
 }
 
 function checkedValues(name) {
