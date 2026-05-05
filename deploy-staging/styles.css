@@ -793,21 +793,34 @@ body.light .icon-button.lamp-button img {
   white-space: nowrap;
 }
 
-.copy-input-field {
-  grid-column: 1 / -1;
+.validator-credentials {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 74px 52px;
+  gap: 14px;
+  padding-top: 2px;
+}
+
+.copy-input-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 82px 58px;
   align-items: end;
-  gap: 8px;
+  column-gap: 10px;
 }
 
 .copy-input-field label {
+  display: grid;
+  gap: 7px;
   margin-bottom: 0;
 }
 
 .copy-input-field .ghost-button {
+  width: 100%;
   min-width: 0;
   padding-inline: 10px;
+}
+
+.action-spacer {
+  width: 58px;
+  min-height: 40px;
 }
 
 .filters-panel {
@@ -1923,6 +1936,19 @@ body.light dialog .form-card {
 
   .clients-admin-heading .primary-button {
     width: 100%;
+  }
+
+  .copy-input-field {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
+  }
+
+  .copy-input-field .ghost-button {
+    width: 100%;
+  }
+
+  .action-spacer {
+    display: none;
   }
 
   .client-admin-row {
