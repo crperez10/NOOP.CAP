@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260504-validator-layout" />
+    <link rel="stylesheet" href="/styles.css?v=20260504-validator-cards" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -137,15 +137,18 @@
           <label>Tipo de contrato<input id="client-contract-type" name="contractType" placeholder="Contrato" /></label>
           <label class="wide-field">URL del validador<input id="client-validator-url" name="validatorUrl" type="url" placeholder="https://sitio-del-validador.com" /></label>
           <div class="validator-credentials wide-field">
-            <div class="copy-input-field">
+            <div class="copy-input-field validator-credential-row">
               <label>Usuario validador<input id="client-validator-user" name="validatorUser" placeholder="Usuario" /></label>
-              <button class="ghost-button" type="button" data-copy-client-field="client-validator-user">Copiar</button>
-              <span class="action-spacer" aria-hidden="true"></span>
+              <div class="credential-actions">
+                <button class="ghost-button" type="button" data-copy-client-field="client-validator-user">Copiar</button>
+              </div>
             </div>
-            <div class="copy-input-field">
+            <div class="copy-input-field validator-credential-row">
               <label>Contraseña validador<input id="client-validator-password" name="validatorPassword" type="password" placeholder="Contraseña" /></label>
-              <button class="ghost-button" type="button" data-copy-client-field="client-validator-password">Copiar</button>
-              <button class="ghost-button" type="button" data-toggle-client-field="client-validator-password">Ver</button>
+              <div class="credential-actions">
+                <button class="ghost-button" type="button" data-copy-client-field="client-validator-password">Copiar</button>
+                <button class="ghost-button" type="button" data-toggle-client-field="client-validator-password">Ver</button>
+              </div>
             </div>
           </div>
         </div>
@@ -371,6 +374,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260504-validator-layout" defer></script>
+    <script src="/app.js?v=20260504-validator-cards" defer></script>
   </body>
 </html>

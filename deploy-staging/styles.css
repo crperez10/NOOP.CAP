@@ -795,15 +795,14 @@ body.light .icon-button.lamp-button img {
 
 .validator-credentials {
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
   padding-top: 2px;
 }
 
 .copy-input-field {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 82px 58px;
-  align-items: end;
-  column-gap: 10px;
+  gap: 10px;
 }
 
 .copy-input-field label {
@@ -812,15 +811,23 @@ body.light .icon-button.lamp-button img {
   margin-bottom: 0;
 }
 
-.copy-input-field .ghost-button {
-  width: 100%;
+.validator-credential-row {
   min-width: 0;
-  padding-inline: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.025);
 }
 
-.action-spacer {
-  width: 58px;
-  min-height: 40px;
+.credential-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.copy-input-field .ghost-button {
+  min-width: 0;
+  padding-inline: 10px;
 }
 
 .filters-panel {
@@ -1943,12 +1950,16 @@ body.light dialog .form-card {
     row-gap: 8px;
   }
 
-  .copy-input-field .ghost-button {
-    width: 100%;
+  .validator-credentials {
+    grid-template-columns: 1fr;
   }
 
-  .action-spacer {
-    display: none;
+  .credential-actions {
+    justify-content: stretch;
+  }
+
+  .credential-actions .ghost-button {
+    flex: 1;
   }
 
   .client-admin-row {
