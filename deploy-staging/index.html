@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260504-client-detail-padding" />
+    <link rel="stylesheet" href="/styles.css?v=20260504-table-order-favorites" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -102,12 +102,12 @@
           <table>
             <thead>
               <tr>
-                <th class="subject-col"><button class="table-sort active" type="button" data-table-sort="alpha">Asunto <span class="sort-indicator">↑</span></button></th>
+                <th class="subject-col"><button class="table-sort active" type="button" data-table-sort="alpha">Asunto <span class="sort-indicator">&uarr;</span></button></th>
                 <th>Cliente</th>
                 <th>Categoria</th>
                 <th><button class="table-sort" type="button" data-table-sort="date">Fecha <span class="sort-indicator"></span></button></th>
                 <th><button class="table-sort" type="button" data-table-sort="importance">Importancia <span class="sort-indicator"></span></button></th>
-                <th>Acciones</th>
+                <th>Acciones <button id="reset-table-btn" class="table-reset-button" type="button" title="Restablecer filtros y orden">Restablecer</button></th>
               </tr>
             </thead>
             <tbody id="items-tbody"></tbody>
@@ -368,6 +368,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260504-client-detail-padding" defer></script>
+    <script src="/app.js?v=20260504-table-order-favorites" defer></script>
   </body>
 </html>

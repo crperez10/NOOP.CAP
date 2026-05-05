@@ -37,6 +37,7 @@ const els = {
   tableView: document.querySelector("#table-view"),
   tbody: document.querySelector("#items-tbody"),
   tableHead: document.querySelector("thead"),
+  resetTableBtn: document.querySelector("#reset-table-btn"),
   loader: document.querySelector("#loader"),
   paginationControls: document.querySelector("#pagination-controls"),
   prevPageBtn: document.querySelector("#prev-page-btn"),
@@ -162,6 +163,7 @@ function bindEvents() {
   els.prevPageBtn.addEventListener("click", () => goToPage(state.page - 1));
   els.nextPageBtn.addEventListener("click", () => goToPage(state.page + 1));
   els.tableHead.addEventListener("click", handleTableSort);
+  els.resetTableBtn.addEventListener("click", resetTableFilters);
   els.cardViewBtn.addEventListener("click", () => setView("cards"));
   els.tableViewBtn.addEventListener("click", () => setView("table"));
   els.themeToggle.addEventListener("click", toggleTheme);
@@ -289,7 +291,7 @@ function handleTableSort(event) {
   const nextSort = button.dataset.tableSort;
   state.sortDirection = state.sort === nextSort
     ? (state.sortDirection === "desc" ? "asc" : "desc")
-    : (nextSort === "importance" ? "asc" : "desc");
+    : "asc";
   state.sort = nextSort;
   syncSortIndicators();
   loadItems(true);
@@ -454,10 +456,7 @@ function itemCard(item) {
       ${attachments.length ? `<div class="file-preview">${attachments.map(attachmentLink).join("")}</div>` : ""}
       <div class="meta-line">${formatDateTime(item.createdAt)}</div>
       <div class="card-actions">
-        <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">
-          ${item.favorite ? "Favorito &#9733;" : "Marcar favorito"}
-        </button>
-        ${favoriteMarker(item)}
+        ${favoriteControl(item)}
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="secondary-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>
@@ -476,8 +475,7 @@ function itemRow(item) {
       <td>${formatDate(item.date)}</td>
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td class="table-actions">
-        <button class="ghost-button favorite-button ${item.favorite ? "active" : ""} role-editor" type="button" data-favorite="${item.id}">${item.favorite ? "Favorito &#9733;" : "Favorito"}</button>
-        ${favoriteMarker(item)}
+        ${favoriteControl(item)}
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
         <button class="ghost-button role-editor" type="button" data-edit="${item.id}">Editar</button>
         <button class="ghost-button danger-button role-admin" type="button" data-delete="${item.id}">Eliminar</button>
@@ -486,9 +484,18 @@ function itemRow(item) {
   `;
 }
 
-function favoriteMarker(item) {
-  if (!item.favorite) return "";
-  return `<span class="favorite-marker" title="Registro favorito" aria-label="Registro favorito">&#9733;</span>`;
+function favoriteControl(item) {
+  if (canModifyData()) {
+    return `
+      <button class="favorite-star-button ${item.favorite ? "active" : ""}" type="button" data-favorite="${item.id}" title="${item.favorite ? "Quitar favorito" : "Marcar favorito"}" aria-label="${item.favorite ? "Quitar favorito" : "Marcar favorito"}">
+        &#9733;
+      </button>
+    `;
+  }
+
+  return item.favorite
+    ? `<span class="favorite-star-button active readonly" title="Registro favorito" aria-label="Registro favorito">&#9733;</span>`
+    : "";
 }
 
 function clientLabel(client) {
@@ -1168,20 +1175,35 @@ function handleFilterChange() {
   state.selectedImportance = checkedValues("importance-filter");
   state.selectedCategories = checkedValues("category-filter");
   state.selectedSubcategories = checkedValues("subcategory-filter");
-  state.sort = document.querySelector("input[name='sort-filter']:checked")?.value || "alpha";
   updateFilterButtonLabel();
   loadItems(true);
 }
 
 function clearAdvancedFilters() {
   els.filterPopover.querySelectorAll("input[type='checkbox']").forEach((input) => (input.checked = false));
-  const alphaSort = els.filterPopover.querySelector("input[name='sort-filter'][value='alpha']");
-  if (alphaSort) alphaSort.checked = true;
   state.selectedImportance = [];
   state.selectedCategories = [];
   state.selectedSubcategories = [];
   state.sort = "alpha";
+  state.sortDirection = "asc";
   updateFilterButtonLabel();
+  loadItems(true);
+}
+
+function resetTableFilters() {
+  els.keywordFilter.value = "";
+  els.fromFilter.value = "";
+  els.toFilter.value = "";
+  els.filterPopover.querySelectorAll("input[type='checkbox']").forEach((input) => (input.checked = false));
+  state.selectedImportance = [];
+  state.selectedCategories = [];
+  state.selectedSubcategories = [];
+  state.sort = "alpha";
+  state.sortDirection = "asc";
+  state.page = 1;
+  updateFilterButtonLabel();
+  closeFilterPopover();
+  syncSortIndicators();
   loadItems(true);
 }
 

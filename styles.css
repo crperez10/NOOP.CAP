@@ -1016,18 +1016,29 @@ body.light .favorite-button.active {
   color: #101522;
 }
 
-.favorite-marker {
+.favorite-star-button {
   min-width: 36px;
   min-height: 36px;
+  width: 36px;
+  padding: 0;
   display: inline-grid;
   place-items: center;
   border: 1px solid rgba(251, 191, 36, 0.5);
   border-radius: var(--radius);
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.16);
+  color: rgba(251, 191, 36, 0.48);
+  background: rgba(251, 191, 36, 0.08);
   font-size: 1.15rem;
   font-weight: 900;
   line-height: 1;
+}
+
+.favorite-star-button.active {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.16);
+}
+
+.favorite-star-button.readonly {
+  cursor: default;
 }
 
 .icon-button {
@@ -1131,6 +1142,24 @@ th {
 
 .table-sort.active {
   color: var(--text);
+}
+
+.table-reset-button {
+  width: auto;
+  min-height: 28px;
+  margin-left: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.72rem;
+  text-transform: none;
+}
+
+.table-reset-button:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
 }
 
 .sort-indicator {
