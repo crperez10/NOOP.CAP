@@ -1,5 +1,6 @@
 import express from "express";
 import crypto from "crypto";
+import mongoose from "mongoose";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { filesToAttachments, upload } from "../config/upload.js";
 import { User } from "../models/User.js";
@@ -220,6 +221,18 @@ authRouter.delete("/users/:id", requireAuth, requireRole("admin"), async (req, r
   res.json({ ok: true });
 });
 
+authRouter.post("/users/:id/sessions/clear", requireAuth, requireRole("admin"), async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
+
+    const closedSessions = await clearUserSessions(req, user.id);
+    res.json({ ok: true, closedSessions });
+  } catch (error) {
+    next(error);
+  }
+});
+
 function serializeUser(user) {
   return {
     id: user.id,
@@ -235,6 +248,53 @@ function serializeUser(user) {
 
 function validRole(role) {
   return ["admin", "collaborator", "viewer"].includes(role);
+}
+
+async function clearUserSessions(req, userId) {
+  if (typeof req.sessionStore?.all === "function") {
+    const sessions = await new Promise((resolve, reject) => {
+      req.sessionStore.all((error, result) => (error ? reject(error) : resolve(result || {})));
+    });
+
+    const entries = Array.isArray(sessions)
+      ? sessions.map((session) => [String(session?._id || session?.id || ""), session])
+      : Object.entries(sessions);
+    const targetSessions = entries.filter(([sessionId, session]) => {
+      if (sessionId === req.sessionID) return false;
+      return String(sessionUserId(session)) === String(userId);
+    });
+
+    await Promise.all(
+      targetSessions.map(
+        ([sessionId]) =>
+          new Promise((resolve, reject) => {
+            req.sessionStore.destroy(sessionId, (error) => (error ? reject(error) : resolve()));
+          })
+      )
+    );
+
+    return targetSessions.length;
+  }
+
+  const result = await mongoose.connection.collection("sessions").deleteMany({
+    _id: { $ne: req.sessionID },
+    "session.userId": String(userId),
+  });
+  return result.deletedCount || 0;
+}
+
+function sessionUserId(session) {
+  if (!session) return "";
+  if (session.userId) return session.userId;
+  if (session.session?.userId) return session.session.userId;
+  if (typeof session.session === "string") {
+    try {
+      return JSON.parse(session.session).userId || "";
+    } catch {
+      return "";
+    }
+  }
+  return "";
 }
 
 function finishLogin(req, res, user, message) {

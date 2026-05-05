@@ -2,6 +2,7 @@ const state = {
   user: null,
   clients: [],
   items: [],
+  users: [],
   selectedClient: "",
   selectedCategories: [],
   selectedSubcategories: [],
@@ -934,6 +935,7 @@ async function openUsersDialog() {
   }
 
   const data = await api("/api/auth/users");
+  state.users = data.users;
   els.usersList.innerHTML = data.users
     .map(
       (user) => `
@@ -943,6 +945,7 @@ async function openUsersDialog() {
           </div>
           <div class="admin-row-actions">
             <button class="secondary-button" type="button" data-user-edit="${user.id}">Editar</button>
+            <button class="secondary-button" type="button" data-user-clear-sessions="${user.id}">Cerrar sesiones</button>
             <button class="ghost-button danger-button" type="button" data-user-delete="${user.id}">Eliminar</button>
           </div>
         </article>
@@ -955,6 +958,9 @@ async function openUsersDialog() {
   });
   els.usersList.querySelectorAll("[data-user-delete]").forEach((button) => {
     button.addEventListener("click", () => deleteUser(button.dataset.userDelete));
+  });
+  els.usersList.querySelectorAll("[data-user-clear-sessions]").forEach((button) => {
+    button.addEventListener("click", () => clearUserSessions(button.dataset.userClearSessions));
   });
 
   if (!els.usersDialog.open) els.usersDialog.showModal();
@@ -1000,6 +1006,19 @@ async function deleteUser(userId) {
     await api(`/api/auth/users/${userId}`, { method: "DELETE" });
     notify("Usuario eliminado.");
     await openUsersDialog();
+  } catch (error) {
+    notify(error.message);
+  }
+}
+
+async function clearUserSessions(userId) {
+  const user = state.users.find((entry) => entry.id === userId);
+  const name = user?.name || "este usuario";
+  if (!confirm(`Cerrar las sesiones activas de ${name} en otras maquinas?`)) return;
+
+  try {
+    const data = await api(`/api/auth/users/${userId}/sessions/clear`, { method: "POST" });
+    notify(data.closedSessions ? `Sesiones cerradas: ${data.closedSessions}.` : "No habia sesiones externas activas.");
   } catch (error) {
     notify(error.message);
   }
