@@ -9,6 +9,7 @@ const state = {
   clientSearch: "",
   sort: "alpha",
   sortDirection: "asc",
+  sortExplicit: false,
   page: 1,
   totalItems: 0,
   pageSize: 10,
@@ -297,6 +298,7 @@ function handleTableSort(event) {
     ? (state.sortDirection === "desc" ? "asc" : "desc")
     : "asc";
   state.sort = nextSort;
+  state.sortExplicit = true;
   syncSortIndicators();
   loadItems(true);
 }
@@ -418,7 +420,7 @@ function renderItems(total = state.items.length) {
 
 function syncSortIndicators() {
   document.querySelectorAll("[data-table-sort]").forEach((button) => {
-    const active = button.dataset.tableSort === state.sort;
+    const active = state.sortExplicit && button.dataset.tableSort === state.sort;
     const arrow = state.sortDirection === "asc" ? "↑" : "↓";
     button.classList.toggle("active", active);
     button.setAttribute("aria-sort", active ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none");
@@ -1285,6 +1287,7 @@ function resetTableFilters(event) {
 function resetTableOrderState() {
   state.sort = DEFAULT_TABLE_SORT;
   state.sortDirection = DEFAULT_TABLE_DIRECTION;
+  state.sortExplicit = false;
 }
 
 function checkedValues(name) {

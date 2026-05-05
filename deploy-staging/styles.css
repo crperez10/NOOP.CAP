@@ -396,6 +396,8 @@ body.light .icon-button.lamp-button img {
   border-radius: var(--radius);
   padding: 16px;
   margin-bottom: 16px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .side-section.compact {
@@ -441,6 +443,7 @@ body.light .icon-button.lamp-button img {
 .file-preview {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .user-edit-row {
@@ -602,6 +605,8 @@ body.light .icon-button.lamp-button img {
 
 .client-row {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 58px;
   padding: 10px;
   color: var(--text);
@@ -609,6 +614,7 @@ body.light .icon-button.lamp-button img {
   border: 1px solid transparent;
   border-radius: var(--radius);
   text-align: left;
+  overflow: hidden;
 }
 
 .client-row:hover,
@@ -693,7 +699,7 @@ body.light .icon-button.lamp-button img {
 }
 
 .records-toolbar .table-reset-button {
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .records-toolbar .secondary-button {
@@ -1154,21 +1160,7 @@ body.light .favorite-button.active {
 }
 
 .loader {
-  position: absolute;
-  top: 326px;
-  right: 44px;
-  z-index: 12;
-  min-width: 92px;
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-strong);
-  box-shadow: var(--shadow);
-  color: var(--primary-2);
-  pointer-events: none;
+  display: none !important;
 }
 
 .toolbar {
@@ -1256,14 +1248,14 @@ th {
 
 .table-reset-button {
   width: auto;
-  min-height: 28px;
-  margin-left: 8px;
-  padding: 4px 8px;
-  border: 1px solid var(--line);
+  min-height: 36px;
+  margin-left: 0;
+  padding: 7px 12px;
+  border: 1px solid rgba(109, 93, 252, 0.28);
   border-radius: var(--radius);
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.055);
-  font-size: 0.72rem;
+  color: var(--text);
+  background: rgba(109, 93, 252, 0.16);
+  font-size: 0.92rem;
   text-transform: none;
 }
 
