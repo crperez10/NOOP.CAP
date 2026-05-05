@@ -1210,7 +1210,7 @@ body.light .favorite-button.active {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 840px;
+  min-width: 940px;
 }
 
 th.subject-col,
@@ -1288,6 +1288,12 @@ tbody tr:last-child td {
 }
 
 .table-actions {
+  white-space: nowrap;
+}
+
+.creator-cell {
+  color: var(--muted);
+  font-weight: 700;
   white-space: nowrap;
 }
 

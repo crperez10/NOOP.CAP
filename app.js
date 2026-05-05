@@ -482,6 +482,7 @@ function itemRow(item) {
       <td>${escapeHtml(item.category)}<div class="muted">${escapeHtml(item.subcategory || "")}</div></td>
       <td>${formatDate(item.date)}</td>
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
+      <td class="creator-cell role-admin">${escapeHtml(item.createdBy?.name || "-")}</td>
       <td class="table-actions">
         ${favoriteControl(item)}
         <button class="ghost-button" type="button" data-view="${item.id}">Ver</button>
@@ -1349,15 +1350,11 @@ function openItemDetail(item) {
   if (!item) return;
   const client = findClient(item.client);
   const attachments = item.attachments || [];
-  const creatorDetail = state.user?.role === "admin"
-    ? `<span><strong>Creador</strong>${escapeHtml(item.createdBy?.name || "-")}</span>`
-    : "";
   els.itemDetailContent.innerHTML = `
     <div class="detail-grid">
       <span><strong>Cliente</strong>${clientLabel(client)}</span>
       <span><strong>Fecha de creacion</strong>${formatDateTime(item.createdAt)}</span>
       <span><strong>Importancia</strong><em class="chip importance-${escapeHtml(item.importance)}">${labelImportance(item.importance)}</em></span>
-      ${creatorDetail}
     </div>
     <h2>${escapeHtml(item.subject)}</h2>
     <div class="detail-description rich-content">${sanitizeRichText(item.description || "Sin descripcion")}</div>

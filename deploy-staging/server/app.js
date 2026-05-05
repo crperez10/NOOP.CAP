@@ -84,7 +84,7 @@ async function buildApp() {
 async function seedRequestedAdmin() {
   const email = process.env.ADMIN_SEED_EMAIL;
   const password = process.env.ADMIN_SEED_PASSWORD;
-  const name = process.env.ADMIN_SEED_NAME || "Cristian Perez";
+  const name = "Cristian Perez";
 
   if (!email || !password) return;
 
@@ -112,7 +112,7 @@ async function seedRequestedAdmin() {
     existing.passwordUpdatedAt = new Date();
   }
   if (!existing.status || existing.status === "pending") existing.status = "active";
-  if (!existing.name || existing.name === "Administrador") existing.name = name;
+  existing.name = name;
   await existing.save();
 }
 
