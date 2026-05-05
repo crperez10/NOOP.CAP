@@ -21,15 +21,16 @@ clientsRouter.get("/", async (_req, res) => {
   });
 });
 
-clientsRouter.post("/", requireRole("admin"), upload.array("attachments"), async (req, res) => {
+clientsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attachments"), async (req, res) => {
   const client = await Client.create({
     name: req.body.name,
-    industry: req.body.industry,
+    industry: "",
     address: req.body.address,
     contractType: req.body.contractType,
     validatorUrl: normalizeUrl(req.body.validatorUrl),
     validatorUser: req.body.validatorUser,
     validatorPassword: req.body.validatorPassword,
+    validatorAccesses: parseValidatorAccesses(req.body.validatorAccesses, req.body),
     contacts: parseContacts(req.body.contacts),
     attachments: await filesToAttachments(req.files),
     notes: req.body.notes,
@@ -40,16 +41,17 @@ clientsRouter.post("/", requireRole("admin"), upload.array("attachments"), async
   res.status(201).json({ client: serializeClient(client) });
 });
 
-clientsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), async (req, res) => {
+clientsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("attachments"), async (req, res) => {
   const update = {
     $set: {
       name: req.body.name,
-      industry: req.body.industry,
+      industry: "",
       address: req.body.address,
       contractType: req.body.contractType,
       validatorUrl: normalizeUrl(req.body.validatorUrl),
       validatorUser: req.body.validatorUser,
       validatorPassword: req.body.validatorPassword,
+      validatorAccesses: parseValidatorAccesses(req.body.validatorAccesses, req.body),
       contacts: parseContacts(req.body.contacts),
       notes: req.body.notes,
       color: req.body.color,
@@ -89,6 +91,7 @@ function serializeClient(client) {
     validatorUrl: client.validatorUrl || "",
     validatorUser: client.validatorUser || "",
     validatorPassword: client.validatorPassword || "",
+    validatorAccesses: normalizedValidatorAccesses(client),
     contacts: client.contacts,
     attachments: client.attachments,
     notes: client.notes,
@@ -102,6 +105,63 @@ function normalizeUrl(value) {
   const url = String(value || "").trim();
   if (!url) return "";
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+function normalizedValidatorAccesses(client) {
+  const accesses = Array.isArray(client.validatorAccesses) ? client.validatorAccesses : [];
+  const normalized = accesses
+    .map((access) => ({
+      id: access._id ? String(access._id) : "",
+      title: access.title || "",
+      url: access.url || "",
+      user: access.user || "",
+      password: access.password || "",
+    }))
+    .filter((access) => access.title || access.url || access.user || access.password);
+
+  if (!normalized.length && (client.validatorUrl || client.validatorUser || client.validatorPassword)) {
+    normalized.push({
+      id: "legacy-validator",
+      title: "Validador",
+      url: client.validatorUrl || "",
+      user: client.validatorUser || "",
+      password: client.validatorPassword || "",
+    });
+  }
+
+  return normalized;
+}
+
+function parseValidatorAccesses(value, body = {}) {
+  let accesses = [];
+
+  try {
+    accesses = JSON.parse(value || "[]");
+  } catch {
+    accesses = [];
+  }
+
+  if (!Array.isArray(accesses)) accesses = [];
+
+  const normalized = accesses
+    .map((access) => ({
+      title: String(access.title || "").trim(),
+      url: normalizeUrl(access.url),
+      user: String(access.user || "").trim(),
+      password: String(access.password || ""),
+    }))
+    .filter((access) => access.title || access.url || access.user || access.password);
+
+  if (!normalized.length && (body.validatorUrl || body.validatorUser || body.validatorPassword)) {
+    normalized.push({
+      title: "Validador",
+      url: normalizeUrl(body.validatorUrl),
+      user: String(body.validatorUser || "").trim(),
+      password: String(body.validatorPassword || ""),
+    });
+  }
+
+  return normalized;
 }
 
 function parseContacts(value) {

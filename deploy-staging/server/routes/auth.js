@@ -100,11 +100,11 @@ authRouter.post("/users", requireAuth, requireRole("admin"), async (req, res) =>
   try {
     const { name, email, role, password } = req.body;
 
-    if (!name || !email || (role === "admin" && !password)) {
-      return res.status(400).json({ message: "Nombre, email y password son obligatorios para administradores." });
+    if (!name || !email || (["admin", "collaborator"].includes(role) && !password)) {
+      return res.status(400).json({ message: "Nombre, email y password son obligatorios para administradores y colaboradores." });
     }
 
-    if (!["admin", "viewer"].includes(role)) {
+    if (!validRole(role)) {
       return res.status(400).json({ message: "Rol invalido." });
     }
 
@@ -119,7 +119,7 @@ authRouter.post("/users", requireAuth, requireRole("admin"), async (req, res) =>
       role,
       status: "active",
       authProvider: "native",
-      passwordHash: role === "admin" ? await hashPassword(password) : "",
+      passwordHash: role === "viewer" ? "" : await hashPassword(password),
     });
 
     res.status(201).json({ user: serializeUser(user) });
@@ -134,7 +134,7 @@ authRouter.post("/users", requireAuth, requireRole("admin"), async (req, res) =>
 
 authRouter.patch("/users/:id/role", requireAuth, requireRole("admin"), async (req, res) => {
   const { role } = req.body;
-  if (!["admin", "viewer"].includes(role)) {
+  if (!validRole(role)) {
     return res.status(400).json({ message: "Rol invalido." });
   }
 
@@ -147,7 +147,7 @@ authRouter.patch("/users/:id", requireAuth, requireRole("admin"), async (req, re
   try {
     const { name, email, role, password, status } = req.body;
 
-    if (!name || !email || !["admin", "viewer"].includes(role)) {
+    if (!name || !email || !validRole(role)) {
       return res.status(400).json({ message: "Nombre, email y rol validos son obligatorios." });
     }
 
@@ -169,7 +169,7 @@ authRouter.patch("/users/:id", requireAuth, requireRole("admin"), async (req, re
     };
 
     if (role === "viewer") update.passwordHash = "";
-    if (role === "admin" && password) update.passwordHash = await hashPassword(password);
+    if (role !== "viewer" && password) update.passwordHash = await hashPassword(password);
 
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
     if (!user) return res.status(404).json({ message: "Usuario no encontrado." });
@@ -203,6 +203,10 @@ function serializeUser(user) {
     status: user.status || "active",
     authProvider: user.authProvider,
   };
+}
+
+function validRole(role) {
+  return ["admin", "collaborator", "viewer"].includes(role);
 }
 
 function finishLogin(req, res, user, message) {

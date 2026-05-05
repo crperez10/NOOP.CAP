@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260504-simple-record-detail" />
+    <link rel="stylesheet" href="/styles.css?v=20260505-clients-roles-sort" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -36,7 +36,7 @@
           </div>
           <nav id="hamburger-menu" class="hamburger-menu" hidden>
             <button class="role-editor" type="button" data-menu-action="new-item">Nuevo registro</button>
-            <button class="role-admin" type="button" data-menu-action="clients">Clientes</button>
+            <button class="role-editor" type="button" data-menu-action="clients">Clientes</button>
             <button type="button" data-menu-action="account">Cuenta</button>
             <button class="role-admin" type="button" data-menu-action="settings">Configuracion</button>
             <button type="button" data-menu-action="logout">Cerrar sesion</button>
@@ -94,6 +94,7 @@
           <button id="table-view-btn" class="secondary-button" type="button">Tabla</button>
           <button id="card-view-btn" class="secondary-button" type="button">Cards</button>
           <span id="result-count" class="result-count"></span>
+          <button id="reset-table-btn" class="table-reset-button" type="button" title="Restablecer filtros y orden">Restablecer</button>
         </section>
 
         <div id="loader" class="loader" hidden></div>
@@ -103,11 +104,11 @@
             <thead>
               <tr>
                 <th class="subject-col"><button class="table-sort active" type="button" data-table-sort="alpha">Asunto <span class="sort-indicator">&uarr;</span></button></th>
-                <th>Cliente</th>
+                <th><button class="table-sort" type="button" data-table-sort="client">Cliente <span class="sort-indicator"></span></button></th>
                 <th>Categoria</th>
                 <th><button class="table-sort" type="button" data-table-sort="date">Fecha <span class="sort-indicator"></span></button></th>
                 <th><button class="table-sort" type="button" data-table-sort="importance">Importancia <span class="sort-indicator"></span></button></th>
-                <th>Acciones <button id="reset-table-btn" class="table-reset-button" type="button" title="Restablecer filtros y orden">Restablecer</button></th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="items-tbody"></tbody>
@@ -133,23 +134,13 @@
         <h4>Identificacion</h4>
         <div class="client-form-grid">
           <label>Nombre del cliente<input id="client-name" name="name" placeholder="Ej: ATSA" required /></label>
-          <label>Rubro<input id="client-industry" name="industry" placeholder="Ej: Obra social" /></label>
           <label>Tipo de contrato<input id="client-contract-type" name="contractType" placeholder="Contrato" /></label>
-          <label class="wide-field">URL del validador<input id="client-validator-url" name="validatorUrl" type="url" placeholder="https://sitio-del-validador.com" /></label>
-          <div class="validator-credentials wide-field">
-            <div class="copy-input-field validator-credential-row">
-              <label>Usuario validador<input id="client-validator-user" name="validatorUser" placeholder="Usuario" /></label>
-              <div class="credential-actions">
-                <button class="ghost-button" type="button" data-copy-client-field="client-validator-user">Copiar</button>
-              </div>
+          <div class="validator-access-block wide-field">
+            <div class="validator-access-heading">
+              <h4>Accesos y validadores</h4>
+              <button id="add-validator-access-btn" class="secondary-button" type="button">Agregar acceso</button>
             </div>
-            <div class="copy-input-field validator-credential-row">
-              <label>Contraseña validador<input id="client-validator-password" name="validatorPassword" type="password" placeholder="Contraseña" /></label>
-              <div class="credential-actions">
-                <button class="ghost-button" type="button" data-copy-client-field="client-validator-password">Copiar</button>
-                <button class="ghost-button" type="button" data-toggle-client-field="client-validator-password">Ver</button>
-              </div>
-            </div>
+            <div id="validator-access-list" class="validator-access-list"></div>
           </div>
         </div>
       </section>
@@ -288,7 +279,7 @@
                 <label>Nombre<input id="user-name" placeholder="Nombre" /></label>
                 <label>Email<input id="user-email" type="email" placeholder="Email" /></label>
                 <label>Password<input id="user-password" type="password" placeholder="Password" /></label>
-                <label>Perfil<select id="user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select></label>
+                <label>Perfil<select id="user-role"><option value="admin">Administrador</option><option value="collaborator">Colaborador</option><option value="viewer">Invitado</option></select></label>
               </div>
             </section>
             <div class="panel-actions">
@@ -333,7 +324,7 @@
         <div class="settings-form-grid">
           <label>Nombre<input id="edit-user-name" placeholder="Nombre" /></label>
           <label>Email<input id="edit-user-email" type="email" placeholder="Email" /></label>
-          <label>Perfil<select id="edit-user-role"><option value="admin">Administrador</option><option value="viewer">Invitado</option></select></label>
+          <label>Perfil<select id="edit-user-role"><option value="admin">Administrador</option><option value="collaborator">Colaborador</option><option value="viewer">Invitado</option></select></label>
           <label>Estado<select id="edit-user-status"><option value="active">Activo</option><option value="pending">Pendiente</option><option value="blocked">Bloqueado</option></select></label>
           <label class="wide-field">Nuevo password<input id="edit-user-password" type="password" placeholder="Dejar vacio para conservar el actual" /></label>
         </div>
@@ -374,6 +365,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260504-simple-record-detail" defer></script>
+    <script src="/app.js?v=20260505-clients-roles-sort" defer></script>
   </body>
 </html>

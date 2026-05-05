@@ -692,6 +692,10 @@ body.light .icon-button.lamp-button img {
   margin-bottom: 8px;
 }
 
+.records-toolbar .table-reset-button {
+  margin-left: auto;
+}
+
 .records-toolbar .secondary-button {
   min-height: 36px;
   padding: 7px 12px;
@@ -794,30 +798,42 @@ body.light .icon-button.lamp-button img {
   white-space: nowrap;
 }
 
-.validator-credentials {
+.validator-access-block {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  padding-top: 2px;
+  gap: 14px;
 }
 
-.copy-input-field {
-  display: grid;
-  gap: 10px;
+.validator-access-heading,
+.validator-access-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.copy-input-field label {
-  display: grid;
-  gap: 7px;
-  margin-bottom: 0;
+.validator-access-heading h4,
+.validator-access-card-heading strong {
+  margin: 0;
 }
 
-.validator-credential-row {
-  min-width: 0;
+.validator-access-list {
+  display: grid;
+  gap: 14px;
+}
+
+.validator-access-card {
+  display: grid;
+  gap: 14px;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.025);
+}
+
+.validator-access-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .credential-actions {
@@ -829,6 +845,53 @@ body.light .icon-button.lamp-button img {
 .copy-input-field .ghost-button {
   min-width: 0;
   padding-inline: 10px;
+}
+
+.password-inline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  gap: 8px;
+}
+
+.icon-eye-button {
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+.eye-icon {
+  width: 20px;
+  height: 13px;
+  position: relative;
+  display: inline-block;
+  border: 2px solid currentColor;
+  border-radius: 999px / 70%;
+}
+
+.eye-icon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.icon-eye-button:not(.visible) .eye-icon::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 5px;
+  width: 26px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: rotate(-35deg);
 }
 
 .filters-panel {
@@ -1217,6 +1280,10 @@ th {
   font-weight: 900;
   line-height: 1;
   text-align: center;
+}
+
+.table-sort:not(.active) .sort-indicator {
+  display: none;
 }
 
 tbody tr:last-child td {
@@ -1970,7 +2037,7 @@ body.light dialog .form-card {
     row-gap: 8px;
   }
 
-  .validator-credentials {
+  .validator-access-grid {
     grid-template-columns: 1fr;
   }
 

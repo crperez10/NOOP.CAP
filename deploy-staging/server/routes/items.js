@@ -14,6 +14,30 @@ itemsRouter.get("/", async (req, res) => {
   const page = Math.max(Number(req.query.page) || 1, 1);
   const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 50);
 
+  if (req.query.sort === "client") {
+    const [items, total] = await Promise.all([
+      Item.aggregate([
+        { $match: query },
+        { $lookup: { from: "clients", localField: "client", foreignField: "_id", as: "clientDoc" } },
+        { $unwind: { path: "$clientDoc", preserveNullAndEmptyArrays: true } },
+        { $sort: sort },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+        { $lookup: { from: "users", localField: "createdBy", foreignField: "_id", as: "createdBy" } },
+        { $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true } },
+        { $project: { clientDoc: 0, "createdBy.passwordHash": 0 } },
+      ]).collation({ locale: "es", strength: 1 }),
+      Item.countDocuments(query),
+    ]);
+
+    return res.json({
+      items: items.map(serializeItem),
+      page,
+      total,
+      hasMore: page * limit < total,
+    });
+  }
+
   const [items, total] = await Promise.all([
     Item.find(query)
       .populate("createdBy", "name email avatar role")
@@ -32,7 +56,7 @@ itemsRouter.get("/", async (req, res) => {
   });
 });
 
-itemsRouter.post("/", requireRole("admin"), upload.array("attachments"), async (req, res) => {
+itemsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attachments"), async (req, res) => {
   const clientIds = itemClientIds(req.body);
   if (!clientIds.length) return res.status(400).json({ message: "Selecciona al menos un cliente." });
 
@@ -61,7 +85,7 @@ itemsRouter.post("/", requireRole("admin"), upload.array("attachments"), async (
   });
 });
 
-itemsRouter.patch("/:id", requireRole("admin"), upload.array("attachments"), async (req, res) => {
+itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("attachments"), async (req, res) => {
   const clientIds = itemClientIds(req.body);
   if (!clientIds.length) return res.status(400).json({ message: "Selecciona al menos un cliente." });
 
@@ -180,7 +204,7 @@ async function buildItemQuery(params) {
 
 function serializeItem(item) {
   return {
-    id: item.id,
+    id: item.id || String(item._id),
     client: item.client,
     subject: item.subject,
     date: item.date,
@@ -200,6 +224,7 @@ function itemSort(sort, direction) {
   const dir = direction === "asc" ? 1 : -1;
   if (sort === "importance") return { importanceRank: dir, subject: 1, date: -1, createdAt: -1 };
   if (sort === "date") return { date: dir, subject: 1, createdAt: -1 };
+  if (sort === "client") return { "clientDoc.name": dir, subject: 1, date: -1, createdAt: -1 };
   return { favorite: -1, subject: dir, date: -1, createdAt: -1 };
 }
 

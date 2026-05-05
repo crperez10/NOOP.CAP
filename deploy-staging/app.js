@@ -22,6 +22,7 @@ const state = {
 
 const ROLE_LABELS = {
   admin: "Administrador",
+  collaborator: "Colaborador",
   viewer: "Invitado",
 };
 
@@ -68,11 +69,9 @@ const els = {
   clientForm: document.querySelector("#client-form"),
   clientId: document.querySelector("#client-id"),
   clientName: document.querySelector("#client-name"),
-  clientIndustry: document.querySelector("#client-industry"),
   clientContractType: document.querySelector("#client-contract-type"),
-  clientValidatorUrl: document.querySelector("#client-validator-url"),
-  clientValidatorUser: document.querySelector("#client-validator-user"),
-  clientValidatorPassword: document.querySelector("#client-validator-password"),
+  addValidatorAccessBtn: document.querySelector("#add-validator-access-btn"),
+  validatorAccessList: document.querySelector("#validator-access-list"),
   clientColor: document.querySelector("#client-color"),
   clientNotes: document.querySelector("#client-notes"),
   clientFiles: document.querySelector("#client-files"),
@@ -175,6 +174,7 @@ function bindEvents() {
   els.hamburgerBtn.addEventListener("click", toggleHamburgerMenu);
   els.hamburgerMenu.addEventListener("click", handleMenuClick);
   els.adminNewClientBtn.addEventListener("click", () => openClientDialog());
+  els.addValidatorAccessBtn.addEventListener("click", () => addValidatorAccessRow());
   els.clientsAdminList.addEventListener("click", handleClientsAdminClick);
   els.clientForm.addEventListener("submit", saveClient);
   els.clientForm.addEventListener("click", handleClientFormTools);
@@ -302,7 +302,7 @@ function handleTableSort(event) {
 }
 
 function renderClients() {
-  const allButton = clientButton({ id: "", name: "Todos los clientes", industry: "Vista global", color: "#22d3ee", itemCount: totalClientItemCount() });
+  const allButton = clientButton({ id: "", name: "Todos los clientes", contractType: "Vista global", color: "#22d3ee", itemCount: totalClientItemCount() });
   const visibleClients = state.clientSearch
     ? state.clients.filter((client) => clientMatchesSearch(client, state.clientSearch))
     : state.clients;
@@ -337,7 +337,7 @@ function sortClientsByName(clients = []) {
 }
 
 function clientMatchesSearch(client, keyword) {
-  return [client.name, client.industry, client.address, client.contractType, client.notes]
+  return [client.name, client.address, client.contractType, client.notes]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(keyword));
 }
@@ -349,7 +349,7 @@ function clientButton(client) {
       <span class="client-dot" style="background:${escapeHtml(client.color)}"></span>
       <span class="client-copy">
         <strong>${escapeHtml(client.name)}</strong>
-        <span>${escapeHtml(client.industry || "Sin rubro")} / ${client.itemCount || 0} registros</span>
+        <span>${escapeHtml(client.contractType || "Sin contrato")} / ${client.itemCount || 0} registros</span>
       </span>
     </button>
   `;
@@ -489,7 +489,7 @@ function itemRow(item) {
 }
 
 function favoriteControl(item) {
-  if (canModifyData()) {
+  if (canFavoriteData()) {
     return `
       <button class="favorite-star-button ${item.favorite ? "active" : ""}" type="button" data-favorite="${item.id}" title="${item.favorite ? "Quitar favorito" : "Marcar favorito"}" aria-label="${item.favorite ? "Quitar favorito" : "Marcar favorito"}">
         &#9733;
@@ -635,11 +635,8 @@ function openClientDialog(client = null, options = {}) {
   if (clientFormTitle) clientFormTitle.textContent = readonly ? "Datos del cliente" : "Cliente";
   els.clientId.value = client?.id || "";
   els.clientName.value = client?.name || "";
-  els.clientIndustry.value = client?.industry || "";
   els.clientContractType.value = client?.contractType || "";
-  els.clientValidatorUrl.value = client?.validatorUrl || "";
-  els.clientValidatorUser.value = client?.validatorUser || "";
-  els.clientValidatorPassword.value = client?.validatorPassword || "";
+  renderValidatorAccessRows(client?.validatorAccesses || legacyValidatorAccesses(client));
   els.clientColor.value = client?.color || "#6d5dfc";
   els.clientNotes.value = client?.notes || "";
   els.clientFiles.value = "";
@@ -653,22 +650,90 @@ function setClientFormReadonly(readonly) {
     if (field.type !== "hidden") field.disabled = readonly;
   });
   els.clientForm.querySelector("button[type='submit']").hidden = readonly;
+  els.addValidatorAccessBtn.hidden = readonly;
+  els.clientForm.querySelectorAll("[data-remove-validator-access]").forEach((button) => (button.hidden = readonly));
+}
+
+function legacyValidatorAccesses(client) {
+  if (!client || !(client.validatorUrl || client.validatorUser || client.validatorPassword)) return [];
+  return [{
+    title: "Validador",
+    url: client.validatorUrl || "",
+    user: client.validatorUser || "",
+    password: client.validatorPassword || "",
+  }];
+}
+
+function renderValidatorAccessRows(accesses = []) {
+  const rows = accesses.length ? accesses : [{ title: "Validador", url: "", user: "", password: "" }];
+  els.validatorAccessList.innerHTML = rows.map(validatorAccessRow).join("");
+}
+
+function addValidatorAccessRow(access = { title: "", url: "", user: "", password: "" }) {
+  els.validatorAccessList.insertAdjacentHTML("beforeend", validatorAccessRow(access));
+}
+
+function validatorAccessRow(access = {}) {
+  return `
+    <article class="validator-access-card">
+      <div class="validator-access-card-heading">
+        <strong>Acceso</strong>
+        <button class="ghost-button" type="button" data-remove-validator-access>Quitar</button>
+      </div>
+      <div class="validator-access-grid">
+        <label>Titulo<input data-validator-field="title" placeholder="Ej: Portal principal" value="${escapeHtml(access.title || "")}" /></label>
+        <label>URL<input data-validator-field="url" type="url" placeholder="https://sitio.com" value="${escapeHtml(access.url || "")}" /></label>
+        <label>Usuario<input data-validator-field="user" placeholder="Usuario" value="${escapeHtml(access.user || "")}" /></label>
+        <label>Contraseña
+          <span class="password-inline">
+            <input data-validator-field="password" type="password" placeholder="Contraseña" value="${escapeHtml(access.password || "")}" />
+            <button class="ghost-button icon-eye-button" type="button" data-toggle-client-field="password" aria-label="Mostrar contraseña"><span class="eye-icon"></span></button>
+          </span>
+        </label>
+      </div>
+      <div class="credential-actions">
+        <button class="ghost-button" type="button" data-copy-client-field="user">Copiar usuario</button>
+        <button class="ghost-button" type="button" data-copy-client-field="password">Copiar contraseña</button>
+      </div>
+    </article>
+  `;
+}
+
+function readValidatorAccessRows() {
+  return [...els.validatorAccessList.querySelectorAll(".validator-access-card")]
+    .map((card) => ({
+      title: card.querySelector('[data-validator-field="title"]')?.value.trim() || "",
+      url: card.querySelector('[data-validator-field="url"]')?.value.trim() || "",
+      user: card.querySelector('[data-validator-field="user"]')?.value.trim() || "",
+      password: card.querySelector('[data-validator-field="password"]')?.value || "",
+    }))
+    .filter((access) => access.title || access.url || access.user || access.password);
 }
 
 function handleClientFormTools(event) {
+  const removeButton = event.target.closest("[data-remove-validator-access]");
+  if (removeButton) {
+    removeButton.closest(".validator-access-card")?.remove();
+    if (!els.validatorAccessList.querySelector(".validator-access-card")) addValidatorAccessRow();
+    return;
+  }
+
   const copyButton = event.target.closest("[data-copy-client-field]");
   if (copyButton) {
-    const field = document.querySelector(`#${copyButton.dataset.copyClientField}`);
+    const scope = copyButton.closest(".validator-access-card") || els.clientForm;
+    const field = scope.querySelector(`[data-validator-field="${copyButton.dataset.copyClientField}"]`);
     copyText(field?.value || "");
     return;
   }
 
   const toggleButton = event.target.closest("[data-toggle-client-field]");
   if (toggleButton) {
-    const field = document.querySelector(`#${toggleButton.dataset.toggleClientField}`);
+    const scope = toggleButton.closest(".validator-access-card") || els.clientForm;
+    const field = scope.querySelector(`[data-validator-field="${toggleButton.dataset.toggleClientField}"]`);
     if (!field) return;
     field.type = field.type === "password" ? "text" : "password";
-    toggleButton.textContent = field.type === "password" ? "Ver" : "Ocultar";
+    toggleButton.classList.toggle("visible", field.type === "text");
+    toggleButton.setAttribute("aria-label", field.type === "password" ? "Mostrar contraseña" : "Ocultar contraseña");
   }
 }
 
@@ -679,12 +744,15 @@ async function saveClient(event) {
     const id = els.clientId.value;
     const payload = new FormData();
     payload.set("name", els.clientName.value);
-    payload.set("industry", els.clientIndustry.value);
+    payload.set("industry", "");
     payload.set("address", "");
     payload.set("contractType", els.clientContractType.value);
-    payload.set("validatorUrl", els.clientValidatorUrl.value);
-    payload.set("validatorUser", els.clientValidatorUser.value);
-    payload.set("validatorPassword", els.clientValidatorPassword.value);
+    const accesses = readValidatorAccessRows();
+    const primaryAccess = accesses[0] || {};
+    payload.set("validatorUrl", primaryAccess.url || "");
+    payload.set("validatorUser", primaryAccess.user || "");
+    payload.set("validatorPassword", primaryAccess.password || "");
+    payload.set("validatorAccesses", JSON.stringify(accesses));
     payload.set("contacts", JSON.stringify([]));
     payload.set("color", els.clientColor.value);
     payload.set("notes", els.clientNotes.value);
@@ -730,7 +798,7 @@ function renderClientsAdminList() {
               <span class="client-dot client-admin-dot" style="background:${escapeHtml(client.color)}"></span>
               <div class="client-admin-copy">
                 <strong>${escapeHtml(client.name)}</strong>
-                <span>${escapeHtml(client.industry || "Sin rubro")} / ${client.itemCount || 0} registros</span>
+                <span>${escapeHtml(client.contractType || "Sin contrato")} / ${client.itemCount || 0} registros</span>
                 <small>${escapeHtml(client.validatorUrl || "Sin validador")}</small>
               </div>
               <div class="admin-row-actions">
@@ -825,7 +893,7 @@ async function deleteItem(id) {
 }
 
 async function toggleFavorite(id) {
-  if (!canModifyData()) return;
+  if (!canFavoriteData()) return;
   const item = state.items.find((entry) => entry.id === id);
   if (!item) return;
 
@@ -1049,9 +1117,9 @@ function syncRoleUI() {
   document.querySelectorAll(".role-editor").forEach((el) => (el.hidden = !canModifyData()));
   document.querySelectorAll(".role-client-access").forEach((el) => (el.hidden = !state.user));
   const avatarField = els.accountAvatar?.closest("label") || els.accountAvatar;
-  if (avatarField) avatarField.hidden = !canModifyData();
+  if (avatarField) avatarField.hidden = role !== "admin";
   const accountSubmit = els.accountForm?.querySelector("button[type='submit']");
-  if (accountSubmit) accountSubmit.hidden = !canModifyData();
+  if (accountSubmit) accountSubmit.hidden = role !== "admin";
   els.userSummary.innerHTML = `
     <span class="avatar">${avatarMarkup(state.user)}</span>
     <span>
@@ -1067,6 +1135,10 @@ function hasClientAccess() {
 }
 
 function canModifyData() {
+  return ["admin", "collaborator"].includes(state.user?.role);
+}
+
+function canFavoriteData() {
   return state.user?.role === "admin";
 }
 
