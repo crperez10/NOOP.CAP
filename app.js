@@ -247,7 +247,7 @@ async function loadClients() {
   const data = await api("/api/clients");
   state.clients = sortClientsByName(data.clients);
   if (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient)) {
-    state.selectedClient = preferredClientId();
+    state.selectedClient = ALL_CLIENTS_ID;
   }
   renderClients();
   syncClientSelect();
@@ -342,7 +342,7 @@ function renderClients() {
     id: ALL_CLIENTS_ID,
     name: "Todos los clientes",
     color: "#22d3ee",
-    summaryLabel: "Solo favoritos",
+    summaryLabel: `${totalClientItemCount()} ${totalClientItemCount() === 1 ? "registro" : "registros"}`,
   });
   const visibleClients = state.clientSearch
     ? state.clients.filter((client) => clientMatchesSearch(client, state.clientSearch))
@@ -1312,7 +1312,7 @@ async function refreshWorkspaceData() {
   await loadCategories();
   await loadClients();
   if (!isAllClientsView() && (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient))) {
-    state.selectedClient = preferredClientId();
+    state.selectedClient = ALL_CLIENTS_ID;
   }
   await loadItems(true);
   renderClients();
