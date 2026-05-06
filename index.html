@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260505-creator-filter" />
+    <link rel="stylesheet" href="/styles.css?v=20260505-categories-only" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -80,10 +80,6 @@
               <div class="filter-section">
                 <strong>Categorias</strong>
                 <div id="category-options"></div>
-              </div>
-              <div class="filter-section">
-                <strong>Subcategorias</strong>
-                <div id="subcategory-options"></div>
               </div>
               <div class="filter-section role-admin">
                 <strong>Creador</strong>
@@ -210,8 +206,11 @@
       <section class="item-form-section">
         <h4>Clasificacion</h4>
         <div class="item-form-grid">
-          <label>Categoria<input id="item-category" placeholder="Categoria" /></label>
-          <label>Subcategoria<input id="item-subcategory" placeholder="Subcategoria" /></label>
+          <label class="wide-field">Categoria<select id="item-category" required></select></label>
+          <div class="wide-field category-admin-tools role-admin">
+            <label>Nueva categoria<input id="new-item-category" placeholder="Agregar categoria" /></label>
+            <button id="add-item-category-btn" class="secondary-button" type="button">Agregar categoria</button>
+          </div>
         </div>
       </section>
       <section class="item-form-section">
@@ -373,6 +372,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260505-creator-filter" defer></script>
+    <script src="/app.js?v=20260505-categories-only" defer></script>
   </body>
 </html>

@@ -19,7 +19,6 @@ const itemSchema = new mongoose.Schema(
     importance: { type: String, enum: ["alta", "media", "baja"], default: "media" },
     importanceRank: { type: Number, default: 2, index: true },
     category: { type: String, required: true, trim: true },
-    subcategory: { type: String, default: "", trim: true },
     description: { type: String, default: "" },
     attachments: [attachmentSchema],
     favorite: { type: Boolean, default: false, index: true },
@@ -31,7 +30,6 @@ const itemSchema = new mongoose.Schema(
 itemSchema.index({
   subject: "text",
   category: "text",
-  subcategory: "text",
   description: "text",
 });
 

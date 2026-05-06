@@ -3,9 +3,9 @@ const state = {
   clients: [],
   items: [],
   users: [],
+  categories: [],
   selectedClient: "",
   selectedCategories: [],
-  selectedSubcategories: [],
   selectedImportance: [],
   selectedCreators: [],
   clientSearch: "",
@@ -52,7 +52,6 @@ const els = {
   pageStatus: document.querySelector("#page-status"),
   keywordFilter: document.querySelector("#keyword-filter"),
   categoryOptions: document.querySelector("#category-options"),
-  subcategoryOptions: document.querySelector("#subcategory-options"),
   creatorOptions: document.querySelector("#creator-options"),
   fromFilter: document.querySelector("#from-filter"),
   toFilter: document.querySelector("#to-filter"),
@@ -90,7 +89,8 @@ const els = {
   itemDate: document.querySelector("#item-date"),
   itemImportance: document.querySelector("#item-importance"),
   itemCategory: document.querySelector("#item-category"),
-  itemSubcategory: document.querySelector("#item-subcategory"),
+  newItemCategory: document.querySelector("#new-item-category"),
+  addItemCategoryBtn: document.querySelector("#add-item-category-btn"),
   itemDescriptionEditor: document.querySelector("#item-description-editor"),
   itemDescription: document.querySelector("#item-description"),
   richFontFamily: document.querySelector("#rich-font-family"),
@@ -187,6 +187,7 @@ function bindEvents() {
   els.clientForm.addEventListener("click", handleClientFormTools);
   els.clientFiles.addEventListener("change", (event) => setClientFiles([...event.target.files]));
   els.itemForm.addEventListener("submit", saveItem);
+  els.addItemCategoryBtn.addEventListener("click", addItemCategory);
   els.userCreateForm.addEventListener("submit", createNativeUser);
   els.userEditForm.addEventListener("submit", saveEditedUser);
   els.passwordForm.addEventListener("submit", changePassword);
@@ -244,6 +245,23 @@ async function loadClients() {
   if (state.user) syncRoleUI();
 }
 
+async function loadCategories() {
+  const data = await api("/api/items/categories", { fresh: true });
+  state.categories = mergeCategoryList(data.categories || []);
+  syncCategorySelect();
+  updateFilterOptions();
+}
+
+function syncCategorySelect(selectedValue = els.itemCategory?.value) {
+  if (!els.itemCategory) return;
+  const categories = mergeCategoryList(state.categories);
+  els.itemCategory.innerHTML = [
+    `<option value="">Seleccionar categoria</option>`,
+    ...categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`),
+  ].join("");
+  if (selectedValue && categories.includes(selectedValue)) els.itemCategory.value = selectedValue;
+}
+
 async function loadItems(reset = true) {
   if (!hasClientAccess()) {
     state.items = [];
@@ -270,7 +288,6 @@ async function loadItems(reset = true) {
   if (state.selectedClient) params.set("client", state.selectedClient);
   if (els.keywordFilter.value.trim()) params.set("keyword", els.keywordFilter.value.trim());
   if (state.selectedCategories.length) params.set("category", state.selectedCategories.join(","));
-  if (state.selectedSubcategories.length) params.set("subcategory", state.selectedSubcategories.join(","));
   if (state.selectedImportance.length) params.set("importance", state.selectedImportance.join(","));
   if (state.user?.role === "admin" && state.selectedCreators.length) params.set("creator", state.selectedCreators.join(","));
   if (els.fromFilter.value) params.set("from", els.fromFilter.value);
@@ -463,7 +480,6 @@ function itemCard(item) {
       <p class="muted">${escapeHtml(plainTextFromHtml(item.description) || "Sin descripcion")}</p>
       <div class="chip-row">
         <span class="chip">${escapeHtml(item.category)}</span>
-        ${item.subcategory ? `<span class="chip">${escapeHtml(item.subcategory)}</span>` : ""}
         <span class="chip">${attachments.length} adjuntos</span>
       </div>
       ${attachments.length ? `<div class="file-preview">${attachments.map(attachmentLink).join("")}</div>` : ""}
@@ -484,7 +500,7 @@ function itemRow(item) {
     <tr>
       <td class="subject-cell"><strong class="table-subject">${escapeHtml(item.subject)}</strong></td>
       <td>${clientLabel(client)}</td>
-      <td>${escapeHtml(item.category)}<div class="muted">${escapeHtml(item.subcategory || "")}</div></td>
+      <td>${escapeHtml(item.category)}</td>
       <td>${formatDate(item.date)}</td>
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td class="creator-cell role-admin">${escapeHtml(item.createdBy?.name || "-")}</td>
@@ -530,16 +546,13 @@ function attachmentLink(file) {
 }
 
 function updateFilterOptions() {
-  const categories = unique(state.items.map((item) => item.category));
-  const subcategories = unique(state.items.map((item) => item.subcategory));
+  const categories = mergeCategoryList([...state.categories, ...state.items.map((item) => item.category)]);
   const creators = state.users
     .filter((user) => user.role !== "viewer")
     .sort((a, b) => String(a.name || "").localeCompare(String(b.name || ""), "es", { sensitivity: "base" }));
   state.selectedCategories = state.selectedCategories.filter((value) => categories.includes(value));
-  state.selectedSubcategories = state.selectedSubcategories.filter((value) => subcategories.includes(value));
   state.selectedCreators = state.selectedCreators.filter((value) => creators.some((user) => user.id === value));
   renderCheckboxOptions(els.categoryOptions, "category-filter", categories, state.selectedCategories);
-  renderCheckboxOptions(els.subcategoryOptions, "subcategory-filter", subcategories, state.selectedSubcategories);
   renderCreatorOptions(creators);
   updateFilterButtonLabel();
 }
@@ -880,6 +893,7 @@ async function handleClientsAdminClick(event) {
 
 function openItemDialog(item = null) {
   if (!canModifyData()) return;
+  syncCategorySelect(item?.category || "");
   state.editingItem = item;
   state.files = [];
   els.itemDialogTitle.textContent = item ? "Editar registro" : "Nuevo registro";
@@ -889,7 +903,7 @@ function openItemDialog(item = null) {
   els.itemDate.value = item?.date ? item.date.slice(0, 10) : new Date().toISOString().slice(0, 10);
   els.itemImportance.value = item?.importance || "media";
   els.itemCategory.value = item?.category || "";
-  els.itemSubcategory.value = item?.subcategory || "";
+  if (els.newItemCategory) els.newItemCategory.value = "";
   setRichDescription(item?.description || "");
   els.itemFiles.value = "";
   renderFilePreview();
@@ -906,6 +920,10 @@ async function saveItem(event) {
     notify("Selecciona al menos un cliente.");
     return;
   }
+  if (!els.itemCategory.value) {
+    notify("Selecciona una categoria.");
+    return;
+  }
   const primaryClient = id && selectedClients.includes(String(state.editingItem?.client)) ? state.editingItem.client : selectedClients[0];
   formData.set("client", primaryClient);
   formData.set("clients", JSON.stringify(selectedClients));
@@ -913,7 +931,6 @@ async function saveItem(event) {
   formData.set("date", els.itemDate.value);
   formData.set("importance", els.itemImportance.value);
   formData.set("category", els.itemCategory.value);
-  formData.set("subcategory", els.itemSubcategory.value);
   syncRichDescription();
   formData.set("description", els.itemDescription.value);
   state.files.forEach((file) => formData.append("attachments", file));
@@ -926,6 +943,26 @@ async function saveItem(event) {
   els.itemDialog.close();
   notify(selectedClients.length > 1 ? "Registros guardados." : "Registro guardado.");
   await refreshWorkspaceData();
+}
+
+async function addItemCategory() {
+  if (state.user?.role !== "admin") return;
+  const category = els.newItemCategory.value.trim();
+  if (!category) {
+    notify("Escribe una categoria.");
+    return;
+  }
+
+  const data = await api("/api/items/categories", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ category }),
+  });
+  state.categories = mergeCategoryList(data.categories || []);
+  syncCategorySelect(category);
+  updateFilterOptions();
+  els.newItemCategory.value = "";
+  notify("Categoria agregada.");
 }
 
 async function deleteItem(id) {
@@ -1230,6 +1267,7 @@ async function loadWorkspaceData() {
 
 async function refreshWorkspaceData() {
   if (!hasClientAccess()) return;
+  await loadCategories();
   await loadClients();
   if (state.selectedClient && !state.clients.some((client) => client.id === state.selectedClient)) {
     state.selectedClient = "";
@@ -1333,7 +1371,6 @@ function closeFilterPopover() {
 function handleFilterChange() {
   state.selectedImportance = checkedValues("importance-filter");
   state.selectedCategories = checkedValues("category-filter");
-  state.selectedSubcategories = checkedValues("subcategory-filter");
   state.selectedCreators = state.user?.role === "admin" ? checkedValues("creator-filter") : [];
   updateFilterButtonLabel();
   loadItems(true);
@@ -1343,7 +1380,6 @@ function clearAdvancedFilters() {
   els.filterPopover.querySelectorAll("input[type='checkbox']").forEach((input) => (input.checked = false));
   state.selectedImportance = [];
   state.selectedCategories = [];
-  state.selectedSubcategories = [];
   state.selectedCreators = [];
   resetTableOrderState();
   updateFilterButtonLabel();
@@ -1358,7 +1394,6 @@ function resetTableFilters(event) {
   els.filterPopover.querySelectorAll("input[type='checkbox']").forEach((input) => (input.checked = false));
   state.selectedImportance = [];
   state.selectedCategories = [];
-  state.selectedSubcategories = [];
   state.selectedCreators = [];
   resetTableOrderState();
   state.page = 1;
@@ -1379,7 +1414,7 @@ function checkedValues(name) {
 }
 
 function updateFilterButtonLabel() {
-  const total = state.selectedImportance.length + state.selectedCategories.length + state.selectedSubcategories.length + state.selectedCreators.length;
+  const total = state.selectedImportance.length + state.selectedCategories.length + state.selectedCreators.length;
   els.filterMenuBtn.textContent = total ? `Filtros (${total})` : "Filtros";
 }
 
@@ -1512,6 +1547,23 @@ function getActiveClient() {
 
 function unique(values) {
   return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+function mergeCategoryList(categories = []) {
+  const normalized = new Map();
+  categories.forEach((category) => {
+    const clean = String(category || "").trim();
+    if (!clean) return;
+    normalized.set(categoryKey(clean), clean);
+  });
+  return [...normalized.values()].sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+}
+
+function categoryKey(category) {
+  return String(category || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es");
 }
 
 function labelImportance(value) {

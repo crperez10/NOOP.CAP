@@ -864,6 +864,19 @@ body.light .icon-button.lamp-button img {
   gap: 8px;
 }
 
+.category-admin-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding-top: 2px;
+}
+
+.category-admin-tools button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
 .icon-eye-button {
   width: 42px;
   min-height: 42px;
@@ -1970,6 +1983,7 @@ body.light dialog .form-card {
   .form-grid,
   .client-form-grid,
   .item-form-grid,
+  .category-admin-tools,
   .client-multi-list,
   .settings-form-grid,
   .inline-create-form,
@@ -1991,6 +2005,7 @@ body.light dialog .form-card {
   }
 
   .color-field,
+  .category-admin-tools,
   .dialog-actions,
   .clients-admin-heading,
   .login-actions {

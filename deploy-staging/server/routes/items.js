@@ -3,9 +3,11 @@ import mongoose from "mongoose";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { Client } from "../models/Client.js";
 import { Item } from "../models/Item.js";
+import { AppSetting } from "../models/AppSetting.js";
 import { filesToAttachments, upload } from "../config/upload.js";
 
 export const itemsRouter = express.Router();
+const BASE_CATEGORIES = ["Memos", "Códigos", "Prestadores", "Auditoría", "Inclusiones"];
 
 itemsRouter.use(requireAuth);
 
@@ -57,9 +59,29 @@ itemsRouter.get("/", async (req, res) => {
   });
 });
 
+itemsRouter.get("/categories", async (_req, res) => {
+  res.json({ categories: await loadCategories() });
+});
+
+itemsRouter.post("/categories", requireRole("admin"), async (req, res) => {
+  const category = normalizeCategory(req.body.category);
+  if (!category) return res.status(400).json({ message: "La categoria es obligatoria." });
+
+  const categories = mergeCategories([...(await loadCategories()), category]);
+  await AppSetting.findOneAndUpdate(
+    { key: "itemCategories" },
+    { $set: { value: { categories } } },
+    { upsert: true, new: true }
+  );
+  res.status(201).json({ categories });
+});
+
 itemsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attachments"), async (req, res) => {
   const clientIds = itemClientIds(req.body);
   if (!clientIds.length) return res.status(400).json({ message: "Selecciona al menos un cliente." });
+  if (!(await isAllowedCategory(req.body.category))) {
+    return res.status(400).json({ message: "Selecciona una categoria valida." });
+  }
 
   const attachments = await filesToAttachments(req.files);
   const items = await Item.create(
@@ -70,7 +92,6 @@ itemsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attach
       importance: req.body.importance,
       importanceRank: toImportanceRank(req.body.importance),
       category: req.body.category,
-      subcategory: req.body.subcategory,
       description: req.body.description,
       attachments,
       favorite: false,
@@ -93,6 +114,9 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
   const primaryClient = req.body.client || clientIds[0];
   const sourceItem = await Item.findById(req.params.id);
   if (!sourceItem) return res.status(404).json({ message: "Registro no encontrado." });
+  if (!(await isAllowedCategory(req.body.category))) {
+    return res.status(400).json({ message: "Selecciona una categoria valida." });
+  }
 
   const update = {
     $set: {
@@ -102,7 +126,6 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
       importance: req.body.importance,
       importanceRank: toImportanceRank(req.body.importance),
       category: req.body.category,
-      subcategory: req.body.subcategory,
       description: req.body.description,
     },
   };
@@ -138,7 +161,6 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
           importance: req.body.importance,
           importanceRank: toImportanceRank(req.body.importance),
           category: req.body.category,
-          subcategory: req.body.subcategory,
           description: req.body.description,
           attachments: item.attachments.map(plainAttachment),
           favorite: false,
@@ -187,7 +209,6 @@ async function buildItemQuery(params, user) {
   }
   if (params.importance) query.importance = { $in: toList(params.importance) };
   if (params.category) query.category = { $in: toList(params.category).map((value) => exactRegex(value)) };
-  if (params.subcategory) query.subcategory = { $in: toList(params.subcategory).map((value) => exactRegex(value)) };
   if (params.keyword) {
     const keyword = String(params.keyword).trim();
     const keywordRegex = new RegExp(escapeRegExp(keyword), "i");
@@ -195,7 +216,6 @@ async function buildItemQuery(params, user) {
     query.$or = [
       { subject: keywordRegex },
       { category: keywordRegex },
-      { subcategory: keywordRegex },
       { description: keywordRegex },
       { client: { $in: matchingClients.map((client) => client._id) } },
     ];
@@ -217,7 +237,6 @@ function serializeItem(item) {
     date: item.date,
     importance: item.importance,
     category: item.category,
-    subcategory: item.subcategory,
     description: item.description,
     attachments: item.attachments,
     favorite: Boolean(item.favorite),
@@ -248,6 +267,46 @@ function toList(value) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+async function loadCategories() {
+  const [setting, itemCategories] = await Promise.all([
+    AppSetting.findOne({ key: "itemCategories" }).lean(),
+    Item.distinct("category"),
+  ]);
+  return mergeCategories([
+    ...BASE_CATEGORIES,
+    ...((setting?.value?.categories || [])),
+    ...itemCategories,
+  ]);
+}
+
+function mergeCategories(categories) {
+  const normalized = new Map();
+  categories.forEach((category) => {
+    const clean = normalizeCategory(category);
+    if (!clean) return;
+    normalized.set(categoryKey(clean), clean);
+  });
+  return [...normalized.values()].sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }));
+}
+
+function normalizeCategory(category) {
+  return String(category || "").trim();
+}
+
+async function isAllowedCategory(category) {
+  const normalized = categoryKey(normalizeCategory(category));
+  if (!normalized) return false;
+  const categories = await loadCategories();
+  return categories.some((entry) => categoryKey(entry) === normalized);
+}
+
+function categoryKey(category) {
+  return String(category || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es");
 }
 
 function itemClientIds(body) {
