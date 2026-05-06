@@ -201,6 +201,27 @@ body.light option {
   display: grid;
   grid-template-columns: 318px minmax(0, 1fr);
   min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+}
+
+.app-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(8, 9, 13, 0.78), rgba(8, 9, 13, 0.9)),
+    url("/assets/noop-background-pattern-1920x1080.jpg") center top / cover repeat;
+  opacity: 0.3;
+}
+
+body.light .app-shell::before {
+  background:
+    linear-gradient(180deg, rgba(246, 247, 251, 0.82), rgba(238, 241, 248, 0.9)),
+    url("/assets/noop-background-pattern-1920x1080.jpg") center top / cover repeat;
+  opacity: 0.12;
 }
 
 .hamburger-button {
@@ -723,6 +744,14 @@ body.light .icon-button.lamp-button img {
   font-size: clamp(2rem, 4vw, 3.6rem);
   line-height: 0.95;
   letter-spacing: 0;
+}
+
+.page-heading-copy {
+  max-width: 520px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
 }
 
 .client-detail-panel {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260505-provider-subcategory" />
+    <link rel="stylesheet" href="/styles.css?v=20260506-home-watermark" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -50,7 +50,6 @@
             <span class="search-icon"></span>
             <input id="client-search-input" type="search" placeholder="Buscar cliente" />
           </div>
-          <div id="result-count" class="client-list-summary"></div>
           <div id="client-list" class="client-list"></div>
         </section>
       </aside>
@@ -60,9 +59,10 @@
         <section class="page-heading" id="page-heading">
           <p class="eyebrow">Client Data</p>
           <h1>NOOP.CAP</h1>
+          <p class="page-heading-copy">Centro privado de navegacion para clientes, normas y registros.</p>
         </section>
 
-        <section class="filters-panel">
+        <section id="filters-panel" class="filters-panel">
           <div class="search-field wide-search">
             <span class="search-icon"></span>
             <input id="keyword-filter" type="search" placeholder="Buscar por asunto, categoria o descripcion" />
@@ -91,7 +91,7 @@
           </div>
         </section>
 
-        <section class="records-toolbar">
+        <section id="records-toolbar" class="records-toolbar">
           <button id="table-view-btn" class="secondary-button" type="button">Tabla</button>
           <button id="card-view-btn" class="secondary-button" type="button">Cards</button>
           <button id="reset-table-btn" class="table-reset-button" type="button" title="Restablecer filtros y orden">Restablecer</button>
@@ -373,6 +373,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260505-provider-subcategory" defer></script>
+    <script src="/app.js?v=20260506-home-watermark" defer></script>
   </body>
 </html>
