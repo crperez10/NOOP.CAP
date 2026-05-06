@@ -243,6 +243,9 @@ async function loadClients() {
 
   const data = await api("/api/clients");
   state.clients = sortClientsByName(data.clients);
+  if (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient)) {
+    state.selectedClient = preferredClientId();
+  }
   renderClients();
   syncClientSelect();
   if (state.user) syncRoleUI();
@@ -331,11 +334,10 @@ function handleTableSort(event) {
 }
 
 function renderClients() {
-  const allButton = clientButton({ id: "", name: "Todos los clientes", contractType: "Vista global", color: "#22d3ee", itemCount: totalClientItemCount() });
   const visibleClients = state.clientSearch
     ? state.clients.filter((client) => clientMatchesSearch(client, state.clientSearch))
     : state.clients;
-  els.clientList.innerHTML = allButton + visibleClients.map(clientButton).join("");
+  els.clientList.innerHTML = visibleClients.map(clientButton).join("");
 
   els.clientList.querySelectorAll("[data-client-id]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -354,6 +356,11 @@ function renderClients() {
 
 function totalClientItemCount() {
   return state.clients.reduce((total, client) => total + (Number(client.itemCount) || 0), 0);
+}
+
+function preferredClientId() {
+  const atsaClient = state.clients.find((client) => String(client.name || "").trim().toLocaleLowerCase("es") === "atsa");
+  return atsaClient?.id || state.clients[0]?.id || "";
 }
 
 function sortClientsByName(clients = []) {
@@ -429,7 +436,9 @@ function syncPageHeading() {
 }
 
 function renderItems(total = state.items.length) {
-  els.resultCount.textContent = `${total} ${total === 1 ? "registro" : "registros"}`;
+  const activeClient = getActiveClient();
+  const countLabel = `${total} ${total === 1 ? "registro" : "registros"}`;
+  els.resultCount.textContent = activeClient ? `${activeClient.name} / ${countLabel}` : countLabel;
   syncPagination();
   syncSortIndicators();
 
@@ -1282,8 +1291,8 @@ async function refreshWorkspaceData() {
   if (!hasClientAccess()) return;
   await loadCategories();
   await loadClients();
-  if (state.selectedClient && !state.clients.some((client) => client.id === state.selectedClient)) {
-    state.selectedClient = "";
+  if (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient)) {
+    state.selectedClient = preferredClientId();
   }
   await loadItems(true);
   renderClients();

@@ -1194,6 +1194,13 @@ body.light .favorite-button.active {
   font-size: 0.92rem;
 }
 
+.client-list-summary {
+  margin: 4px 0 2px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .pagination-controls {
   display: flex;
   align-items: center;
