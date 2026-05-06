@@ -31,7 +31,7 @@ const ROLE_LABELS = {
 
 const DEFAULT_TABLE_SORT = "alpha";
 const DEFAULT_TABLE_DIRECTION = "asc";
-const HOME_CLIENT_ID = "__home__";
+const ALL_CLIENTS_ID = "__all__";
 
 const els = {
   app: document.querySelector("#app"),
@@ -42,7 +42,6 @@ const els = {
   userSummary: document.querySelector("#user-summary"),
   cardsView: document.querySelector("#cards-view"),
   tableView: document.querySelector("#table-view"),
-  dashboardPanel: document.querySelector("#dashboard-panel"),
   tbody: document.querySelector("#items-tbody"),
   tableHead: document.querySelector("thead"),
   resetTableBtn: document.querySelector("#reset-table-btn"),
@@ -239,7 +238,7 @@ function bindEvents() {
 async function loadClients() {
   if (!hasClientAccess()) {
     state.clients = [];
-    state.selectedClient = HOME_CLIENT_ID;
+    state.selectedClient = ALL_CLIENTS_ID;
     renderClients();
     syncClientSelect();
     return;
@@ -248,7 +247,7 @@ async function loadClients() {
   const data = await api("/api/clients");
   state.clients = sortClientsByName(data.clients);
   if (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient)) {
-    state.selectedClient = HOME_CLIENT_ID;
+    state.selectedClient = preferredClientId();
   }
   renderClients();
   syncClientSelect();
@@ -282,16 +281,6 @@ async function loadItems(reset = true) {
     return;
   }
 
-  if (isHomeView()) {
-    state.items = [];
-    state.hasMore = false;
-    state.page = 1;
-    state.totalItems = totalClientItemCount();
-    els.loader.hidden = true;
-    renderItems(0);
-    return;
-  }
-
   if (reset) {
     state.page = 1;
   }
@@ -305,7 +294,8 @@ async function loadItems(reset = true) {
     t: String(Date.now()),
   });
 
-  if (!isHomeView() && state.selectedClient) params.set("client", state.selectedClient);
+  if (!isAllClientsView() && state.selectedClient) params.set("client", state.selectedClient);
+  if (isAllClientsView()) params.set("favorite", "true");
   if (els.keywordFilter.value.trim()) params.set("keyword", els.keywordFilter.value.trim());
   if (state.selectedCategories.length) params.set("category", state.selectedCategories.join(","));
   if (state.selectedImportance.length) params.set("importance", state.selectedImportance.join(","));
@@ -349,10 +339,10 @@ function handleTableSort(event) {
 
 function renderClients() {
   const homeButton = clientButton({
-    id: HOME_CLIENT_ID,
-    name: "Dashboard",
+    id: ALL_CLIENTS_ID,
+    name: "Todos los clientes",
     color: "#22d3ee",
-    summaryLabel: "Panel principal",
+    summaryLabel: "Solo favoritos",
   });
   const visibleClients = state.clientSearch
     ? state.clients.filter((client) => clientMatchesSearch(client, state.clientSearch))
@@ -380,11 +370,11 @@ function totalClientItemCount() {
 
 function preferredClientId() {
   const atsaClient = state.clients.find((client) => String(client.name || "").trim().toLocaleLowerCase("es") === "atsa");
-  return atsaClient?.id || state.clients[0]?.id || HOME_CLIENT_ID;
+  return atsaClient?.id || state.clients[0]?.id || ALL_CLIENTS_ID;
 }
 
 function defaultItemClientId() {
-  return isHomeView() ? preferredClientId() : (state.selectedClient || preferredClientId());
+  return isAllClientsView() ? preferredClientId() : (state.selectedClient || preferredClientId());
 }
 
 function sortClientsByName(clients = []) {
@@ -417,7 +407,7 @@ function clientButton(client) {
 }
 
 function renderClientDetail(client) {
-  if (!client || isHomeView()) {
+  if (!client || isAllClientsView()) {
     els.clientDetailPanel.hidden = true;
     els.clientDetailPanel.innerHTML = "";
     return;
@@ -457,20 +447,13 @@ function credentialField(label, value, canView) {
 }
 
 function syncPageHeading() {
-  if (els.pageHeading) els.pageHeading.hidden = !isHomeView();
+  if (els.pageHeading) els.pageHeading.hidden = !isAllClientsView();
 }
 
 function renderItems(total = state.items.length) {
   syncPagination();
   syncSortIndicators();
-  renderDashboard();
   syncWorkspaceShell();
-
-  if (isHomeView()) {
-    els.cardsView.innerHTML = "";
-    els.tbody.innerHTML = "";
-    return;
-  }
 
   if (!state.items.length) {
     els.cardsView.innerHTML = `<article class="record-card"><h3>No hay registros</h3><p class="muted">Crea el primer item o ajusta los filtros.</p></article>`;
@@ -484,47 +467,12 @@ function renderItems(total = state.items.length) {
   if (state.user) syncRoleUI();
 }
 
-function renderDashboard() {
-  if (!els.dashboardPanel) return;
-  const today = new Date();
-  const totalRecords = totalClientItemCount();
-  const totalClients = state.clients.length;
-  const longDate = new Intl.DateTimeFormat("es-AR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(today);
-  const currentYear = today.getFullYear();
-
-  els.dashboardPanel.innerHTML = `
-    <article class="dashboard-card dashboard-card-wide">
-      <p class="eyebrow">Dashboard</p>
-      <h2>NOOP.CAP</h2>
-      <p class="dashboard-date">${escapeHtml(longDate)}</p>
-      <span class="dashboard-year">${currentYear}</span>
-    </article>
-    <article class="dashboard-card">
-      <p class="eyebrow">Registros</p>
-      <strong>${totalRecords}</strong>
-      <span class="dashboard-meta">Total acumulado en todos los clientes</span>
-    </article>
-    <article class="dashboard-card">
-      <p class="eyebrow">Clientes</p>
-      <strong>${totalClients}</strong>
-      <span class="dashboard-meta">Espacios creados en la aplicacion</span>
-    </article>
-  `;
-}
-
 function syncWorkspaceShell() {
-  const home = isHomeView();
-  els.dashboardPanel.hidden = !home;
-  els.filtersPanel.hidden = home;
-  els.recordsToolbar.hidden = home;
-  if (home) els.loader.hidden = true;
-  els.cardsView.hidden = home || state.view !== "cards";
-  els.tableView.hidden = home || state.view !== "table";
-  els.paginationControls.classList.toggle("is-hidden", home || state.totalItems <= state.pageSize);
+  els.filtersPanel.hidden = false;
+  els.recordsToolbar.hidden = false;
+  els.cardsView.hidden = state.view !== "cards";
+  els.tableView.hidden = state.view !== "table";
+  els.paginationControls.classList.toggle("is-hidden", state.totalItems <= state.pageSize);
 }
 
 function syncSortIndicators() {
@@ -540,7 +488,7 @@ function syncSortIndicators() {
 
 function syncPagination() {
   const totalPages = totalPagesForItems();
-  els.paginationControls.classList.toggle("is-hidden", isHomeView() || state.totalItems <= state.pageSize);
+  els.paginationControls.classList.toggle("is-hidden", state.totalItems <= state.pageSize);
   els.pageStatus.textContent = `Hoja ${Math.min(state.page, totalPages)} de ${totalPages}`;
   els.prevPageBtn.disabled = state.page <= 1;
   els.nextPageBtn.disabled = state.page >= totalPages;
@@ -920,7 +868,7 @@ async function deleteActiveClient() {
   if (!client) return;
   if (!confirm(`Eliminar el cliente "${client.name}" y todos sus registros?`)) return;
   await api(`/api/clients/${client.id}`, { method: "DELETE" });
-  state.selectedClient = HOME_CLIENT_ID;
+  state.selectedClient = ALL_CLIENTS_ID;
   notify("Cliente eliminado.");
   await refreshWorkspaceData();
 }
@@ -971,7 +919,7 @@ async function handleClientsAdminClick(event) {
     const client = state.clients.find((item) => item.id === deleteId);
     if (!client || !confirm(`Eliminar el cliente "${client.name}" y todos sus registros?`)) return;
     await api(`/api/clients/${deleteId}`, { method: "DELETE" });
-    if (state.selectedClient === deleteId) state.selectedClient = HOME_CLIENT_ID;
+    if (state.selectedClient === deleteId) state.selectedClient = ALL_CLIENTS_ID;
     notify("Cliente eliminado.");
     await refreshWorkspaceData();
   }
@@ -1347,7 +1295,7 @@ async function loadWorkspaceData() {
   if (!hasClientAccess()) {
     state.clients = [];
     state.items = [];
-    state.selectedClient = HOME_CLIENT_ID;
+    state.selectedClient = ALL_CLIENTS_ID;
     renderClients();
     renderItems();
     syncClientSelect();
@@ -1363,8 +1311,8 @@ async function refreshWorkspaceData() {
   if (!hasClientAccess()) return;
   await loadCategories();
   await loadClients();
-  if (!isHomeView() && (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient))) {
-    state.selectedClient = HOME_CLIENT_ID;
+  if (!isAllClientsView() && (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient))) {
+    state.selectedClient = preferredClientId();
   }
   await loadItems(true);
   renderClients();
@@ -1636,12 +1584,12 @@ function findClient(id) {
 }
 
 function getActiveClient() {
-  if (isHomeView()) return null;
+  if (isAllClientsView()) return null;
   return state.clients.find((client) => client.id === state.selectedClient);
 }
 
-function isHomeView() {
-  return state.selectedClient === HOME_CLIENT_ID;
+function isAllClientsView() {
+  return state.selectedClient === ALL_CLIENTS_ID;
 }
 
 function unique(values) {

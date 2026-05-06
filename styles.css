@@ -1215,62 +1215,6 @@ body.light .favorite-button.active {
   justify-content: flex-start;
 }
 
-.dashboard-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(220px, 1fr));
-  gap: 14px;
-}
-
-.dashboard-card {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)), var(--surface);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(22px) saturate(140%);
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  min-height: 170px;
-}
-
-.dashboard-card-wide {
-  min-height: 170px;
-}
-
-.dashboard-card h2,
-.dashboard-card strong {
-  margin: 0;
-  font-size: clamp(1.8rem, 3vw, 3rem);
-  line-height: 0.95;
-  letter-spacing: 0;
-}
-
-.dashboard-card strong {
-  font-size: clamp(2rem, 3vw, 3.1rem);
-}
-
-.dashboard-date,
-.dashboard-meta {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.dashboard-year {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  min-height: 30px;
-  padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
 .pagination-controls {
   display: flex;
   align-items: center;
@@ -2065,7 +2009,6 @@ body.light dialog .form-card {
   .client-form-grid,
   .item-form-grid,
   .category-admin-tools,
-  .dashboard-panel,
   .client-multi-list,
   .settings-form-grid,
   .inline-create-form,

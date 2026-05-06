@@ -204,6 +204,7 @@ async function buildItemQuery(params, user) {
   const query = {};
 
   if (params.client) query.client = params.client;
+  if (String(params.favorite).toLowerCase() === "true") query.favorite = true;
   if (params.creator && user?.role === "admin") {
     const creatorIds = toList(params.creator)
       .filter((id) => mongoose.Types.ObjectId.isValid(id))
