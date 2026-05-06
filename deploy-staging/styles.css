@@ -207,21 +207,26 @@ body.light option {
 
 .app-shell::before {
   content: "";
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(8, 9, 13, 0.78), rgba(8, 9, 13, 0.9)),
-    url("/assets/noop-background-pattern-1920x1080.jpg") center top / cover repeat;
-  opacity: 0.3;
+    linear-gradient(180deg, rgba(8, 9, 13, 0.68), rgba(8, 9, 13, 0.84)),
+    url("/assets/noop-background-pattern-1920x1080.jpg") center top / 960px auto repeat;
+  opacity: 0.42;
 }
 
 body.light .app-shell::before {
   background:
-    linear-gradient(180deg, rgba(246, 247, 251, 0.82), rgba(238, 241, 248, 0.9)),
-    url("/assets/noop-background-pattern-1920x1080.jpg") center top / cover repeat;
-  opacity: 0.12;
+    linear-gradient(180deg, rgba(246, 247, 251, 0.76), rgba(238, 241, 248, 0.86)),
+    url("/assets/noop-background-pattern-1920x1080.jpg") center top / 960px auto repeat;
+  opacity: 0.18;
+}
+
+.app-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hamburger-button {
@@ -746,14 +751,6 @@ body.light .icon-button.lamp-button img {
   letter-spacing: 0;
 }
 
-.page-heading-copy {
-  max-width: 520px;
-  margin: 6px 0 0;
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
 .client-detail-panel {
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)), var(--surface);
@@ -1218,14 +1215,58 @@ body.light .favorite-button.active {
   justify-content: flex-start;
 }
 
-.result-count {
-  color: var(--muted);
-  font-size: 0.92rem;
+.dashboard-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(220px, 1fr));
+  gap: 14px;
 }
 
-.client-list-summary {
-  margin: 4px 0 2px;
+.dashboard-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)), var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px) saturate(140%);
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 170px;
+}
+
+.dashboard-card-wide {
+  min-height: 170px;
+}
+
+.dashboard-card h2,
+.dashboard-card strong {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.dashboard-card strong {
+  font-size: clamp(2rem, 3vw, 3.1rem);
+}
+
+.dashboard-date,
+.dashboard-meta {
+  margin: 0;
   color: var(--muted);
+  line-height: 1.5;
+}
+
+.dashboard-year {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
   font-size: 0.9rem;
   font-weight: 700;
 }
@@ -2024,6 +2065,7 @@ body.light dialog .form-card {
   .client-form-grid,
   .item-form-grid,
   .category-admin-tools,
+  .dashboard-panel,
   .client-multi-list,
   .settings-form-grid,
   .inline-create-form,

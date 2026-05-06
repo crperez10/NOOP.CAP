@@ -42,6 +42,7 @@ const els = {
   userSummary: document.querySelector("#user-summary"),
   cardsView: document.querySelector("#cards-view"),
   tableView: document.querySelector("#table-view"),
+  dashboardPanel: document.querySelector("#dashboard-panel"),
   tbody: document.querySelector("#items-tbody"),
   tableHead: document.querySelector("thead"),
   resetTableBtn: document.querySelector("#reset-table-btn"),
@@ -349,10 +350,9 @@ function handleTableSort(event) {
 function renderClients() {
   const homeButton = clientButton({
     id: HOME_CLIENT_ID,
-    name: "Inicio",
+    name: "Dashboard",
     color: "#22d3ee",
-    itemCount: totalClientItemCount(),
-    summaryLabel: "registros totales",
+    summaryLabel: "Panel principal",
   });
   const visibleClients = state.clientSearch
     ? state.clients.filter((client) => clientMatchesSearch(client, state.clientSearch))
@@ -463,6 +463,7 @@ function syncPageHeading() {
 function renderItems(total = state.items.length) {
   syncPagination();
   syncSortIndicators();
+  renderDashboard();
   syncWorkspaceShell();
 
   if (isHomeView()) {
@@ -483,8 +484,41 @@ function renderItems(total = state.items.length) {
   if (state.user) syncRoleUI();
 }
 
+function renderDashboard() {
+  if (!els.dashboardPanel) return;
+  const today = new Date();
+  const totalRecords = totalClientItemCount();
+  const totalClients = state.clients.length;
+  const longDate = new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(today);
+  const currentYear = today.getFullYear();
+
+  els.dashboardPanel.innerHTML = `
+    <article class="dashboard-card dashboard-card-wide">
+      <p class="eyebrow">Dashboard</p>
+      <h2>NOOP.CAP</h2>
+      <p class="dashboard-date">${escapeHtml(longDate)}</p>
+      <span class="dashboard-year">${currentYear}</span>
+    </article>
+    <article class="dashboard-card">
+      <p class="eyebrow">Registros</p>
+      <strong>${totalRecords}</strong>
+      <span class="dashboard-meta">Total acumulado en todos los clientes</span>
+    </article>
+    <article class="dashboard-card">
+      <p class="eyebrow">Clientes</p>
+      <strong>${totalClients}</strong>
+      <span class="dashboard-meta">Espacios creados en la aplicacion</span>
+    </article>
+  `;
+}
+
 function syncWorkspaceShell() {
   const home = isHomeView();
+  els.dashboardPanel.hidden = !home;
   els.filtersPanel.hidden = home;
   els.recordsToolbar.hidden = home;
   if (home) els.loader.hidden = true;
