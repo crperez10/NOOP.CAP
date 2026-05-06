@@ -379,11 +379,15 @@ function defaultItemClientId() {
 
 function sortClientsByName(clients = []) {
   return [...clients].sort((a, b) =>
-    String(a.name || "").localeCompare(String(b.name || ""), "es", {
+    clientSortRank(a) - clientSortRank(b) || String(a.name || "").localeCompare(String(b.name || ""), "es", {
       sensitivity: "base",
       numeric: true,
     })
   );
+}
+
+function clientSortRank(client) {
+  return String(client?.name || "").trim().toLocaleLowerCase("es") === "noop" ? -1 : 0;
 }
 
 function clientMatchesSearch(client, keyword) {
