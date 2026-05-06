@@ -11,6 +11,7 @@ import { clientsRouter } from "./routes/clients.js";
 import { itemsRouter } from "./routes/items.js";
 import { uploadsRouter } from "./routes/uploads.js";
 import { Client } from "./models/Client.js";
+import { Item } from "./models/Item.js";
 import { User } from "./models/User.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,6 +29,7 @@ export function createApp() {
 async function buildApp() {
   await connectDatabase();
   await seedRequestedAdmin();
+  await normalizeLegacyItemCategories();
   await seedStarterClients();
 
   const app = express();
@@ -151,6 +153,13 @@ async function seedStarterClients() {
       color: "#8b5cf6",
     },
   ]);
+}
+
+async function normalizeLegacyItemCategories() {
+  await Item.updateMany(
+    { category: { $in: [/^Facturación$/i, /^Facturacion$/i] } },
+    { $set: { category: "Auditoría" } }
+  );
 }
 
 function hashPassword(password) {
