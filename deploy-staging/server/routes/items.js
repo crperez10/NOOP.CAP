@@ -92,6 +92,7 @@ itemsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attach
       importance: req.body.importance,
       importanceRank: toImportanceRank(req.body.importance),
       category: req.body.category,
+      subcategory: providerSubcategory(req.body.category, req.body.subcategory),
       description: req.body.description,
       attachments,
       favorite: false,
@@ -126,6 +127,7 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
       importance: req.body.importance,
       importanceRank: toImportanceRank(req.body.importance),
       category: req.body.category,
+      subcategory: providerSubcategory(req.body.category, req.body.subcategory),
       description: req.body.description,
     },
   };
@@ -161,6 +163,7 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
           importance: req.body.importance,
           importanceRank: toImportanceRank(req.body.importance),
           category: req.body.category,
+          subcategory: providerSubcategory(req.body.category, req.body.subcategory),
           description: req.body.description,
           attachments: item.attachments.map(plainAttachment),
           favorite: false,
@@ -216,6 +219,7 @@ async function buildItemQuery(params, user) {
     query.$or = [
       { subject: keywordRegex },
       { category: keywordRegex },
+      { subcategory: keywordRegex },
       { description: keywordRegex },
       { client: { $in: matchingClients.map((client) => client._id) } },
     ];
@@ -237,6 +241,7 @@ function serializeItem(item) {
     date: item.date,
     importance: item.importance,
     category: item.category,
+    subcategory: item.subcategory || "",
     description: item.description,
     attachments: item.attachments,
     favorite: Boolean(item.favorite),
@@ -307,6 +312,14 @@ function categoryKey(category) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("es");
+}
+
+function isProviderCategory(category) {
+  return categoryKey(category) === "prestadores";
+}
+
+function providerSubcategory(category, subcategory) {
+  return isProviderCategory(category) ? String(subcategory || "").trim() : "";
 }
 
 function itemClientIds(body) {

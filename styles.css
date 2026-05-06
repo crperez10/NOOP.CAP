@@ -877,6 +877,10 @@ body.light .icon-button.lamp-button img {
   white-space: nowrap;
 }
 
+.provider-subcategory-field[hidden] {
+  display: none;
+}
+
 .icon-eye-button {
   width: 42px;
   min-height: 42px;

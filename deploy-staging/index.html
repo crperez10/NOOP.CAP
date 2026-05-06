@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260505-categories-only" />
+    <link rel="stylesheet" href="/styles.css?v=20260505-provider-subcategory" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -207,6 +207,7 @@
         <h4>Clasificacion</h4>
         <div class="item-form-grid">
           <label class="wide-field">Categoria<select id="item-category" required></select></label>
+          <label id="provider-subcategory-field" class="wide-field provider-subcategory-field" hidden>Prestadores afectados<input id="item-subcategory" placeholder="Ej: Sanatorio, medico, red afectada" /></label>
           <div class="wide-field category-admin-tools role-admin">
             <label>Nueva categoria<input id="new-item-category" placeholder="Agregar categoria" /></label>
             <button id="add-item-category-btn" class="secondary-button" type="button">Agregar categoria</button>
@@ -372,6 +373,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260505-categories-only" defer></script>
+    <script src="/app.js?v=20260505-provider-subcategory" defer></script>
   </body>
 </html>

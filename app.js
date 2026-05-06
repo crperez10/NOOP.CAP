@@ -89,6 +89,8 @@ const els = {
   itemDate: document.querySelector("#item-date"),
   itemImportance: document.querySelector("#item-importance"),
   itemCategory: document.querySelector("#item-category"),
+  providerSubcategoryField: document.querySelector("#provider-subcategory-field"),
+  itemSubcategory: document.querySelector("#item-subcategory"),
   newItemCategory: document.querySelector("#new-item-category"),
   addItemCategoryBtn: document.querySelector("#add-item-category-btn"),
   itemDescriptionEditor: document.querySelector("#item-description-editor"),
@@ -187,6 +189,7 @@ function bindEvents() {
   els.clientForm.addEventListener("click", handleClientFormTools);
   els.clientFiles.addEventListener("change", (event) => setClientFiles([...event.target.files]));
   els.itemForm.addEventListener("submit", saveItem);
+  els.itemCategory.addEventListener("change", syncProviderSubcategoryField);
   els.addItemCategoryBtn.addEventListener("click", addItemCategory);
   els.userCreateForm.addEventListener("submit", createNativeUser);
   els.userEditForm.addEventListener("submit", saveEditedUser);
@@ -480,6 +483,7 @@ function itemCard(item) {
       <p class="muted">${escapeHtml(plainTextFromHtml(item.description) || "Sin descripcion")}</p>
       <div class="chip-row">
         <span class="chip">${escapeHtml(item.category)}</span>
+        ${isProviderCategory(item.category) && item.subcategory ? `<span class="chip">${escapeHtml(item.subcategory)}</span>` : ""}
         <span class="chip">${attachments.length} adjuntos</span>
       </div>
       ${attachments.length ? `<div class="file-preview">${attachments.map(attachmentLink).join("")}</div>` : ""}
@@ -500,7 +504,7 @@ function itemRow(item) {
     <tr>
       <td class="subject-cell"><strong class="table-subject">${escapeHtml(item.subject)}</strong></td>
       <td>${clientLabel(client)}</td>
-      <td>${escapeHtml(item.category)}</td>
+      <td>${escapeHtml(item.category)}${isProviderCategory(item.category) && item.subcategory ? `<div class="muted">${escapeHtml(item.subcategory)}</div>` : ""}</td>
       <td>${formatDate(item.date)}</td>
       <td><span class="chip importance-${item.importance}">${labelImportance(item.importance)}</span></td>
       <td class="creator-cell role-admin">${escapeHtml(item.createdBy?.name || "-")}</td>
@@ -903,6 +907,8 @@ function openItemDialog(item = null) {
   els.itemDate.value = item?.date ? item.date.slice(0, 10) : new Date().toISOString().slice(0, 10);
   els.itemImportance.value = item?.importance || "media";
   els.itemCategory.value = item?.category || "";
+  els.itemSubcategory.value = item?.subcategory || "";
+  syncProviderSubcategoryField();
   if (els.newItemCategory) els.newItemCategory.value = "";
   setRichDescription(item?.description || "");
   els.itemFiles.value = "";
@@ -931,6 +937,7 @@ async function saveItem(event) {
   formData.set("date", els.itemDate.value);
   formData.set("importance", els.itemImportance.value);
   formData.set("category", els.itemCategory.value);
+  formData.set("subcategory", isProviderCategory(els.itemCategory.value) ? els.itemSubcategory.value : "");
   syncRichDescription();
   formData.set("description", els.itemDescription.value);
   state.files.forEach((file) => formData.append("attachments", file));
@@ -963,6 +970,12 @@ async function addItemCategory() {
   updateFilterOptions();
   els.newItemCategory.value = "";
   notify("Categoria agregada.");
+}
+
+function syncProviderSubcategoryField() {
+  const shouldShow = isProviderCategory(els.itemCategory.value);
+  els.providerSubcategoryField.hidden = !shouldShow;
+  if (!shouldShow) els.itemSubcategory.value = "";
 }
 
 async function deleteItem(id) {
@@ -1564,6 +1577,10 @@ function categoryKey(category) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("es");
+}
+
+function isProviderCategory(category) {
+  return categoryKey(category) === "prestadores";
 }
 
 function labelImportance(value) {
