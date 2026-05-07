@@ -294,9 +294,11 @@ async function loadItems(reset = true) {
     t: String(Date.now()),
   });
 
+  const keyword = els.keywordFilter.value.trim();
+
   if (!isAllClientsView() && state.selectedClient) params.set("client", state.selectedClient);
-  if (isAllClientsView()) params.set("favorite", "true");
-  if (els.keywordFilter.value.trim()) params.set("keyword", els.keywordFilter.value.trim());
+  if (isAllClientsView() && !keyword) params.set("favorite", "true");
+  if (keyword) params.set("keyword", keyword);
   if (state.selectedCategories.length) params.set("category", state.selectedCategories.join(","));
   if (state.selectedImportance.length) params.set("importance", state.selectedImportance.join(","));
   if (state.user?.role === "admin" && state.selectedCreators.length) params.set("creator", state.selectedCreators.join(","));
