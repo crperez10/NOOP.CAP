@@ -84,6 +84,7 @@ itemsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attach
   }
 
   const attachments = await filesToAttachments(req.files);
+  const groupId = clientIds.length > 1 ? new mongoose.Types.ObjectId() : undefined;
   const items = await Item.create(
     clientIds.map((client) => ({
       client,
@@ -96,6 +97,8 @@ itemsRouter.post("/", requireRole("admin", "collaborator"), upload.array("attach
       description: req.body.description,
       attachments,
       favorite: false,
+      groupId,
+      groupClientIds: groupId ? clientIds : [],
       createdBy: req.user._id,
     }))
   );
@@ -137,6 +140,54 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
     update.$push = { attachments: { $each: newAttachments } };
   }
 
+  if (req.body.updateScope === "group" && sourceItem.groupId) {
+    const groupItems = await Item.find({ groupId: sourceItem.groupId });
+    const existingGroupClientIds = groupItems.map((entry) => String(entry.client));
+    const groupClientIds = uniqueIds([...existingGroupClientIds, ...clientIds]);
+
+    delete update.$set.client;
+    update.$set.groupId = sourceItem.groupId;
+    update.$set.groupClientIds = groupClientIds;
+
+    await Item.updateMany({ groupId: sourceItem.groupId }, update, { runValidators: true });
+
+    const missingClients = clientIds.filter((client) => !existingGroupClientIds.includes(String(client)));
+    const sourceAttachments = [...sourceItem.attachments.map(plainAttachment), ...newAttachments.map(plainAttachment)];
+    if (missingClients.length) {
+      await Item.create(
+        missingClients.map((client) => ({
+          client,
+          subject: req.body.subject,
+          date: req.body.date,
+          importance: req.body.importance,
+          importanceRank: toImportanceRank(req.body.importance),
+          category: req.body.category,
+          subcategory: providerSubcategory(req.body.category, req.body.subcategory),
+          description: req.body.description,
+          attachments: sourceAttachments,
+          favorite: false,
+          groupId: sourceItem.groupId,
+          groupClientIds,
+          createdBy: req.user._id,
+        }))
+      );
+    }
+
+    const groupResult = await Item.find({ groupId: sourceItem.groupId }).populate("createdBy", "name email avatar role");
+    return res.json({
+      item: serializeItem(groupResult.find((entry) => String(entry._id) === String(req.params.id)) || groupResult[0]),
+      items: groupResult.map(serializeItem),
+      count: groupResult.length,
+    });
+  }
+
+  let nextGroupId = sourceItem.groupId;
+  if (!nextGroupId && clientIds.length > 1) nextGroupId = new mongoose.Types.ObjectId();
+  if (nextGroupId) {
+    update.$set.groupId = nextGroupId;
+    update.$set.groupClientIds = uniqueIds([sourceItem.client, ...clientIds]);
+  }
+
   const item = await Item.findByIdAndUpdate(req.params.id, update, {
     new: true,
     runValidators: true,
@@ -155,22 +206,24 @@ itemsRouter.patch("/:id", requireRole("admin", "collaborator"), upload.array("at
   const existingClientIds = new Set(existingCopies.map((entry) => String(entry.client)));
   const clientsToCreate = extraClients.filter((client) => !existingClientIds.has(String(client)));
   const createdItems = clientsToCreate.length
-    ? await Item.create(
-        clientsToCreate.map((client) => ({
-          client,
-          subject: req.body.subject,
-          date: req.body.date,
-          importance: req.body.importance,
-          importanceRank: toImportanceRank(req.body.importance),
-          category: req.body.category,
-          subcategory: providerSubcategory(req.body.category, req.body.subcategory),
-          description: req.body.description,
-          attachments: item.attachments.map(plainAttachment),
-          favorite: false,
-          createdBy: req.user._id,
-        }))
-      )
-    : [];
+      ? await Item.create(
+          clientsToCreate.map((client) => ({
+            client,
+            subject: req.body.subject,
+            date: req.body.date,
+            importance: req.body.importance,
+            importanceRank: toImportanceRank(req.body.importance),
+            category: req.body.category,
+            subcategory: providerSubcategory(req.body.category, req.body.subcategory),
+            description: req.body.description,
+            attachments: item.attachments.map(plainAttachment),
+            favorite: false,
+            groupId: nextGroupId,
+            groupClientIds: nextGroupId ? uniqueIds([item.client, ...clientIds]) : [],
+            createdBy: req.user._id,
+          }))
+        )
+      : [];
 
   const populatedCreatedItems = createdItems.length
     ? await Item.find({ _id: { $in: createdItems.map((entry) => entry._id) } }).populate("createdBy", "name email avatar role")
@@ -246,6 +299,8 @@ function serializeItem(item) {
     description: item.description,
     attachments: item.attachments,
     favorite: Boolean(item.favorite),
+    groupId: item.groupId || "",
+    groupClientIds: (item.groupClientIds || []).map((client) => String(client)),
     createdBy: item.createdBy,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
@@ -342,6 +397,10 @@ function itemClientIds(body) {
   }
 
   return [...new Set(clients.map((client) => String(client).trim()).filter(Boolean))];
+}
+
+function uniqueIds(values = []) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
 function plainAttachment(attachment) {

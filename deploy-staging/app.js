@@ -938,7 +938,7 @@ function openItemDialog(item = null) {
   state.files = [];
   els.itemDialogTitle.textContent = item ? "Editar registro" : "Nuevo registro";
   els.itemId.value = item?.id || "";
-  setSelectedItemClients(item ? [item.client] : [defaultItemClientId()].filter(Boolean));
+  setSelectedItemClients(item ? itemClientSelection(item) : [defaultItemClientId()].filter(Boolean));
   els.itemSubject.value = item?.subject || "";
   els.itemDate.value = item?.date ? item.date.slice(0, 10) : new Date().toISOString().slice(0, 10);
   els.itemImportance.value = item?.importance || "media";
@@ -969,6 +969,7 @@ async function saveItem(event) {
   const primaryClient = id && selectedClients.includes(String(state.editingItem?.client)) ? state.editingItem.client : selectedClients[0];
   formData.set("client", primaryClient);
   formData.set("clients", JSON.stringify(selectedClients));
+  formData.set("updateScope", itemUpdateScope(id));
   formData.set("subject", els.itemSubject.value);
   formData.set("date", els.itemDate.value);
   formData.set("importance", els.itemImportance.value);
@@ -986,6 +987,18 @@ async function saveItem(event) {
   els.itemDialog.close();
   notify(selectedClients.length > 1 ? "Registros guardados." : "Registro guardado.");
   await refreshWorkspaceData();
+}
+
+function itemClientSelection(item) {
+  const groupClients = Array.isArray(item?.groupClientIds) ? item.groupClientIds : [];
+  return groupClients.length ? groupClients : [item?.client].filter(Boolean);
+}
+
+function itemUpdateScope(id) {
+  if (!id || !state.editingItem?.groupId) return "single";
+  return confirm("Este registro esta vinculado a otros clientes. ¿Aplicar los cambios a todo el grupo compartido?")
+    ? "group"
+    : "single";
 }
 
 async function addItemCategory() {

@@ -23,6 +23,8 @@ const itemSchema = new mongoose.Schema(
     description: { type: String, default: "" },
     attachments: [attachmentSchema],
     favorite: { type: Boolean, default: false, index: true },
+    groupId: { type: mongoose.Schema.Types.ObjectId, index: true },
+    groupClientIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Client" }],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
