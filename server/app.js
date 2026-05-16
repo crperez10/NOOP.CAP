@@ -48,19 +48,24 @@ async function buildApp() {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  const sessionOptions = {
+    secret: process.env.SESSION_SECRET || "local-dev-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1000 * 60 * 60 * 8,
+    },
+  };
+
+  if (process.env.SESSION_STORE !== "memory") {
+    sessionOptions.store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
+  }
+
   app.use(
-    session({
-      secret: process.env.SESSION_SECRET || "local-dev-secret",
-      resave: false,
-      saveUninitialized: false,
-      store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-      cookie: {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 1000 * 60 * 60 * 8,
-      },
-    })
+    session(sessionOptions)
   );
   app.use(loadSessionUser);
 

@@ -26,23 +26,27 @@ authRouter.post("/guest-login", async (req, res) => {
   finishLogin(req, res, user, "No se pudo iniciar sesion como invitado.");
 });
 
-authRouter.get("/login-users", async (_req, res) => {
-  const users = await User.find({
-    authProvider: "native",
-    status: "active",
-    role: { $in: ["admin", "collaborator"] },
-    passwordHash: { $ne: "" },
-  })
-    .sort({ name: 1, email: 1 })
-    .collation({ locale: "es", strength: 1 });
+authRouter.get("/login-users", async (_req, res, next) => {
+  try {
+    const users = await User.find({
+      authProvider: "native",
+      status: "active",
+      role: { $in: ["admin", "collaborator"] },
+      passwordHash: { $ne: "" },
+    })
+      .sort({ name: 1, email: 1 })
+      .collation({ locale: "es", strength: 1 });
 
-  res.json({
-    users: users.map((user) => ({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    })),
-  });
+    res.json({
+      users: users.map((user) => ({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 authRouter.post("/native-login", async (req, res) => {

@@ -1,6 +1,9 @@
-import { createApp } from "../server/app.js";
-
 let appPromise;
+
+async function getApp() {
+  appPromise ||= import("../server/app.js").then((module) => module.createApp());
+  return appPromise;
+}
 
 function normalizePathParam(value) {
   if (Array.isArray(value)) return value.join("/");
@@ -40,14 +43,34 @@ function resolveExpressUrl(req) {
 }
 
 export default async function handler(req, res) {
-  appPromise ||= createApp();
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
 
   try {
     req.url = resolveExpressUrl(req);
-    const app = await appPromise;
+    if (req.url.startsWith("/api/health")) {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({
+        ok: true,
+        service: "noop-cap-api",
+        layer: "handler",
+        mongoConfigured: Boolean(process.env.MONGODB_URI),
+      }));
+    }
+    if (req.method === "GET" && req.url.startsWith("/auth/me")) {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify({ user: null, auth: {} }));
+    }
+    if (req.method === "GET" && req.url.startsWith("/auth/login-users")) {
+      const data = await loginUsersDirect();
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      return res.end(JSON.stringify(data));
+    }
+    const app = await getApp();
     return app(req, res);
   } catch (error) {
     appPromise = undefined;
@@ -60,4 +83,28 @@ export default async function handler(req, res) {
       code: error?.code || error?.codeName || "API_STARTUP_ERROR",
     }));
   }
+}
+
+async function loginUsersDirect() {
+  const [{ connectDatabase }, { User }] = await Promise.all([
+    import("../server/config/db.js"),
+    import("../server/models/User.js"),
+  ]);
+  await connectDatabase();
+  const users = await User.find({
+    authProvider: "native",
+    status: "active",
+    role: { $in: ["admin", "collaborator"] },
+    passwordHash: { $ne: "" },
+  })
+    .sort({ name: 1, email: 1 })
+    .collation({ locale: "es", strength: 1 });
+
+  return {
+    users: users.map((user) => ({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    })),
+  };
 }
