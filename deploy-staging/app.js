@@ -4,11 +4,13 @@ const state = {
   items: [],
   users: [],
   categories: [],
+  nbuEntries: [],
   selectedClient: "",
   selectedCategories: [],
   selectedImportance: [],
   selectedCreators: [],
   clientSearch: "",
+  screen: "records",
   sort: "alpha",
   sortDirection: "asc",
   sortExplicit: false,
@@ -131,6 +133,10 @@ const els = {
   accountAvatarPreview: document.querySelector("#account-avatar-preview"),
   itemDetailDialog: document.querySelector("#item-detail-dialog"),
   itemDetailContent: document.querySelector("#item-detail-content"),
+  nbuScreen: document.querySelector("#nbu-screen"),
+  nbuSearchInput: document.querySelector("#nbu-search-input"),
+  nbuResultsMeta: document.querySelector("#nbu-results-meta"),
+  nbuResults: document.querySelector("#nbu-results"),
   guestLoginBtn: document.querySelector("#guest-login-btn"),
   nativeLoginForm: document.querySelector("#native-login-form"),
   nativeLoginUser: document.querySelector("#native-login-user"),
@@ -170,6 +176,7 @@ function bindEvents() {
     state.clientSearch = els.clientSearchInput.value.trim().toLowerCase();
     renderClients();
   });
+  els.nbuSearchInput.addEventListener("input", debounce(loadNbuEntries, 250));
   els.filterMenuBtn.addEventListener("click", toggleFilterPopover);
   els.filterPopover.addEventListener("change", handleFilterChange);
   els.clearFiltersBtn.addEventListener("click", clearAdvancedFilters);
@@ -259,6 +266,53 @@ async function loadCategories() {
   state.categories = mergeCategoryList(data.categories || []);
   syncCategorySelect();
   updateFilterOptions();
+}
+
+async function loadNbuEntries() {
+  const query = els.nbuSearchInput.value.trim();
+  if (!query) {
+    state.nbuEntries = [];
+    renderNbuResults();
+    return;
+  }
+
+  try {
+    const data = await api(`/api/nbu?q=${encodeURIComponent(query)}`, { fresh: true });
+    state.nbuEntries = data.entries || [];
+    renderNbuResults(data.total || state.nbuEntries.length, query);
+  } catch (error) {
+    state.nbuEntries = [];
+    renderNbuResults(0, query);
+    notify(error.message);
+  }
+}
+
+function renderNbuResults(total = state.nbuEntries.length, query = els.nbuSearchInput.value.trim()) {
+  syncWorkspaceShell();
+
+  if (!query) {
+    els.nbuResultsMeta.textContent = "Ingresa un codigo o una descripcion para comenzar.";
+    els.nbuResults.innerHTML = `
+      <article class="nbu-empty-state">
+        <h3>Consulta NBU</h3>
+        <p class="muted">Puedes buscar por codigo exacto, parte de la descripcion o abreviaturas cargadas en la base.</p>
+      </article>
+    `;
+    return;
+  }
+
+  els.nbuResultsMeta.textContent = `${total} ${total === 1 ? "resultado" : "resultados"} para "${query}".`;
+  if (!state.nbuEntries.length) {
+    els.nbuResults.innerHTML = `
+      <article class="nbu-empty-state">
+        <h3>Sin coincidencias</h3>
+        <p class="muted">Prueba con otro codigo, una abreviatura o una parte distinta de la descripcion.</p>
+      </article>
+    `;
+    return;
+  }
+
+  els.nbuResults.innerHTML = state.nbuEntries.map(nbuCard).join("");
 }
 
 function syncCategorySelect(selectedValue = els.itemCategory?.value) {
@@ -353,6 +407,7 @@ function renderClients() {
 
   els.clientList.querySelectorAll("[data-client-id]").forEach((button) => {
     button.addEventListener("click", () => {
+      state.screen = "records";
       state.selectedClient = button.dataset.clientId;
       state.page = 1;
       loadItems(true);
@@ -399,7 +454,7 @@ function clientMatchesSearch(client, keyword) {
 }
 
 function clientButton(client) {
-  const active = client.id === state.selectedClient ? "active" : "";
+  const active = state.screen === "records" && client.id === state.selectedClient ? "active" : "";
   const countLabel = client.summaryLabel || `${client.itemCount || 0} registros`;
   return `
     <button class="client-row ${active}" type="button" data-client-id="${client.id}">
@@ -413,7 +468,7 @@ function clientButton(client) {
 }
 
 function renderClientDetail(client) {
-  if (!client || isAllClientsView()) {
+  if (state.screen !== "records" || !client || isAllClientsView()) {
     els.clientDetailPanel.hidden = true;
     els.clientDetailPanel.innerHTML = "";
     return;
@@ -453,7 +508,7 @@ function credentialField(label, value, canView) {
 }
 
 function syncPageHeading() {
-  if (els.pageHeading) els.pageHeading.hidden = !isAllClientsView();
+  if (els.pageHeading) els.pageHeading.hidden = state.screen !== "records" || !isAllClientsView();
 }
 
 function renderItems(total = state.items.length) {
@@ -474,11 +529,13 @@ function renderItems(total = state.items.length) {
 }
 
 function syncWorkspaceShell() {
-  els.filtersPanel.hidden = false;
-  els.recordsToolbar.hidden = false;
-  els.cardsView.hidden = state.view !== "cards";
-  els.tableView.hidden = state.view !== "table";
-  els.paginationControls.classList.toggle("is-hidden", state.totalItems <= state.pageSize);
+  const showRecords = state.screen === "records";
+  if (els.nbuScreen) els.nbuScreen.hidden = !state.user || showRecords;
+  els.filtersPanel.hidden = !showRecords;
+  els.recordsToolbar.hidden = !showRecords;
+  els.cardsView.hidden = !showRecords || state.view !== "cards";
+  els.tableView.hidden = !showRecords || state.view !== "table";
+  els.paginationControls.classList.toggle("is-hidden", !showRecords || state.totalItems <= state.pageSize);
 }
 
 function syncSortIndicators() {
@@ -566,6 +623,88 @@ function favoriteControl(item) {
   return item.favorite
     ? `<span class="favorite-star-button active readonly" title="Registro favorito" aria-label="Registro favorito">&#9733;</span>`
     : "";
+}
+
+function nbuCard(entry) {
+  const changes = entry.previousModifications || [];
+  const history = entry.history || [];
+  return `
+    <article class="nbu-card">
+      <header class="nbu-card-header">
+        <div>
+          <p class="eyebrow">Codigo ${escapeHtml(entry.code)}</p>
+          <h3>${escapeHtml(entry.description || "-")}</h3>
+        </div>
+        <span class="chip">UB ${escapeHtml(entry.ub || "-")}</span>
+      </header>
+      <div class="nbu-card-grid">
+        <div class="nbu-info-box">
+          <strong>Codigo</strong>
+          <span>${escapeHtml(entry.code || "-")}</span>
+        </div>
+        <div class="nbu-info-box">
+          <strong>Descripcion actualizada</strong>
+          <span>${escapeHtml(entry.description || "-")}</span>
+        </div>
+        <div class="nbu-info-box">
+          <strong>Unidad bioquimica (UB)</strong>
+          <span>${escapeHtml(entry.ub || "-")}</span>
+        </div>
+        <div class="nbu-info-box">
+          <strong>Ultima actualizacion</strong>
+          <span>${escapeHtml(entry.lastUpdated || "-")}</span>
+        </div>
+        <div class="nbu-info-box wide-field">
+          <strong>Abreviaturas</strong>
+          <span>${escapeHtml(entry.abbreviations || "-")}</span>
+        </div>
+      </div>
+      <section class="nbu-copy-block">
+        <strong>Normas de interpretacion</strong>
+        <div class="rich-content">${multilineHtml(entry.interpretationRules || "Sin normas registradas.")}</div>
+      </section>
+      <section class="nbu-copy-block">
+        <strong>Modificaciones anteriores</strong>
+        ${
+          changes.length
+            ? `<div class="nbu-change-list">${changes.map(nbuChangeItem).join("")}</div>`
+            : `<p class="muted">Sin modificaciones historicas registradas.</p>`
+        }
+      </section>
+      <section class="nbu-copy-block">
+        <strong>Historial</strong>
+        ${
+          history.length
+            ? `<div class="nbu-history-list">${history.map(nbuHistoryItem).join("")}</div>`
+            : `<p class="muted">Sin historial adicional.</p>`
+        }
+      </section>
+    </article>
+  `;
+}
+
+function nbuChangeItem(change) {
+  return `
+    <article class="nbu-row">
+      <span class="chip">${escapeHtml(change.version || "-")}</span>
+      <div>
+        <strong>${escapeHtml(change.field || "Cambio")}</strong>
+        <p class="muted">${escapeHtml(change.previousValue || "-")} -> ${escapeHtml(change.currentValue || "-")}</p>
+      </div>
+    </article>
+  `;
+}
+
+function nbuHistoryItem(entry) {
+  return `
+    <article class="nbu-row">
+      <span class="chip">${escapeHtml(entry.version || "-")}</span>
+      <div>
+        <strong>${escapeHtml(entry.description || "-")}</strong>
+        <p class="muted">UB ${escapeHtml(entry.ub || "-")}${entry.section ? ` / ${escapeHtml(entry.section)}` : ""}${entry.isCurrent ? " / vigente" : ""}</p>
+      </div>
+    </article>
+  `;
 }
 
 function clientLabel(client) {
@@ -1314,7 +1453,9 @@ async function loadWorkspaceData() {
   if (!hasClientAccess()) {
     state.clients = [];
     state.items = [];
+    state.nbuEntries = [];
     state.selectedClient = ALL_CLIENTS_ID;
+    state.screen = "records";
     renderClients();
     renderItems();
     syncClientSelect();
@@ -1333,7 +1474,8 @@ async function refreshWorkspaceData() {
   if (!isAllClientsView() && (!state.selectedClient || !state.clients.some((client) => client.id === state.selectedClient))) {
     state.selectedClient = ALL_CLIENTS_ID;
   }
-  await loadItems(true);
+  if (state.screen === "nbu") renderNbuResults();
+  else await loadItems(true);
   renderClients();
   syncClientSelect();
 }
@@ -1412,9 +1554,21 @@ function handleMenuClick(event) {
 
   if (action === "new-item" && canModifyData()) openItemDialog();
   if (action === "clients" && hasClientAccess()) openClientsAdminDialog();
+  if (action === "nbu") openNbuScreen();
   if (action === "account") openAccountDialog();
   if (action === "settings") openUsersDialog();
   if (action === "logout") logout();
+}
+
+function openNbuScreen() {
+  state.screen = "nbu";
+  els.clientDetailPanel.hidden = true;
+  syncPageHeading();
+  renderClients();
+  renderNbuResults();
+  if (els.nbuSearchInput.value.trim()) {
+    loadNbuEntries().catch((error) => notify(error.message));
+  }
 }
 
 function toggleFilterPopover(event) {
@@ -1710,6 +1864,17 @@ function plainTextFromHtml(value) {
   const template = document.createElement("template");
   template.innerHTML = sanitizeRichText(value);
   return template.content.textContent?.trim() || "";
+}
+
+function multilineHtml(value) {
+  const text = String(value || "").trim();
+  if (!text) return `<p class="muted">-</p>`;
+  return text
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => `<p>${escapeHtml(line)}</p>`)
+    .join("");
 }
 
 function avatarMarkup(user) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/assets/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/styles.css?v=20260506-all-clients-favorites" />
+    <link rel="stylesheet" href="/styles.css?v=20260515-nbu-screen" />
     <title>NOOP.CAP</title>
   </head>
   <body>
@@ -37,6 +37,7 @@
           <nav id="hamburger-menu" class="hamburger-menu" hidden>
             <button class="role-editor" type="button" data-menu-action="new-item">Nuevo registro</button>
             <button class="role-editor" type="button" data-menu-action="clients">Clientes</button>
+            <button type="button" data-menu-action="nbu">NBU</button>
             <button type="button" data-menu-action="account">Cuenta</button>
             <button class="role-admin" type="button" data-menu-action="settings">Configuracion</button>
             <button type="button" data-menu-action="logout">Cerrar sesion</button>
@@ -59,6 +60,21 @@
         <section class="page-heading" id="page-heading">
           <p class="eyebrow">Client Data</p>
           <h1>NOOP.CAP</h1>
+        </section>
+        <section id="nbu-screen" class="nbu-screen" hidden>
+          <header class="nbu-header">
+            <div>
+              <p class="eyebrow">NBU</p>
+              <h2>Nomenclador bioquimico unificado</h2>
+              <p class="muted">Busca por codigo o descripcion para consultar datos clave del nomenclador.</p>
+            </div>
+          </header>
+          <div class="search-field nbu-search-field">
+            <span class="search-icon"></span>
+            <input id="nbu-search-input" type="search" placeholder="Buscar por codigo o descripcion" />
+          </div>
+          <div id="nbu-results-meta" class="nbu-results-meta muted">Ingresa un codigo o una descripcion para comenzar.</div>
+          <section id="nbu-results" class="nbu-results"></section>
         </section>
 
         <section id="filters-panel" class="filters-panel">
@@ -372,6 +388,6 @@
     </section></dialog>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/app.js?v=20260506-all-clients-favorites" defer></script>
+    <script src="/app.js?v=20260515-nbu-screen" defer></script>
   </body>
 </html>

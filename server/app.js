@@ -9,10 +9,12 @@ import { connectDatabase } from "./config/db.js";
 import { authRouter } from "./routes/auth.js";
 import { clientsRouter } from "./routes/clients.js";
 import { itemsRouter } from "./routes/items.js";
+import { nbuRouter } from "./routes/nbu.js";
 import { uploadsRouter } from "./routes/uploads.js";
 import { Client } from "./models/Client.js";
 import { Item } from "./models/Item.js";
 import { User } from "./models/User.js";
+import { ensureNbuSeeded } from "./services/nbuSeed.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,6 +33,7 @@ async function buildApp() {
   await seedRequestedAdmin();
   await normalizeLegacyItemCategories();
   await seedStarterClients();
+  await ensureNbuSeeded();
 
   const app = express();
   app.set("trust proxy", 1);
@@ -71,6 +74,7 @@ async function buildApp() {
   app.use("/auth", authRouter);
   app.use("/api/clients", clientsRouter);
   app.use("/api/items", itemsRouter);
+  app.use("/api/nbu", nbuRouter);
   app.use("/uploads", uploadsRouter);
 
   app.use((error, _req, res, _next) => {
