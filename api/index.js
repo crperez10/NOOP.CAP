@@ -62,13 +62,25 @@ export default async function handler(req, res) {
     if (req.method === "GET" && req.url.startsWith("/auth/me")) {
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json; charset=utf-8");
-      return res.end(JSON.stringify({ user: null, auth: {} }));
+      return res.end(JSON.stringify({ user: hasGuestCookie(req) ? guestUser() : null, auth: {} }));
     }
     if (req.method === "GET" && req.url.startsWith("/auth/login-users")) {
       const data = await loginUsersDirect();
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json; charset=utf-8");
       return res.end(JSON.stringify(data));
+    }
+    if (req.method === "POST" && req.url.startsWith("/auth/guest-login")) {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Set-Cookie", guestCookieHeader());
+      return res.end(JSON.stringify({ user: guestUser() }));
+    }
+    if (req.method === "POST" && req.url.startsWith("/auth/logout")) {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Set-Cookie", "noop_guest=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure");
+      return res.end(JSON.stringify({ ok: true }));
     }
     const app = await getApp();
     return app(req, res);
@@ -83,6 +95,27 @@ export default async function handler(req, res) {
       code: error?.code || error?.codeName || "API_STARTUP_ERROR",
     }));
   }
+}
+
+function hasGuestCookie(req) {
+  return String(req.headers.cookie || "").split(";").some((part) => part.trim() === "noop_guest=1");
+}
+
+function guestCookieHeader() {
+  return "noop_guest=1; Path=/; Max-Age=28800; HttpOnly; SameSite=Lax; Secure";
+}
+
+function guestUser() {
+  return {
+    id: "guest",
+    name: "Invitado",
+    email: "invitado.local@example.com",
+    avatar: "",
+    role: "viewer",
+    status: "active",
+    authProvider: "guest",
+    passwordUpdatedAt: null,
+  };
 }
 
 async function loginUsersDirect() {

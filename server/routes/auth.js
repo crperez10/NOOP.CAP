@@ -7,23 +7,18 @@ import { User } from "../models/User.js";
 
 export const authRouter = express.Router();
 
-authRouter.post("/guest-login", async (req, res) => {
-  const user = await User.findOneAndUpdate(
-    { email: "invitado.local@example.com" },
-    {
-      name: "Invitado",
-      email: "invitado.local@example.com",
-      avatar: "",
-      authProvider: "native",
-      passwordHash: "",
-      status: "active",
-      role: "viewer",
-      lastLoginAt: new Date(),
-    },
-    { new: true, upsert: true }
-  );
-
-  finishLogin(req, res, user, "No se pudo iniciar sesion como invitado.");
+authRouter.post("/guest-login", async (req, res, next) => {
+  try {
+    const user = guestUser();
+    req.session.userId = user.id;
+    req.session.guest = true;
+    req.session.save((error) => {
+      if (error) return res.status(500).json({ message: "No se pudo iniciar sesion como invitado." });
+      res.json({ user });
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 authRouter.get("/login-users", async (_req, res, next) => {
@@ -247,6 +242,19 @@ function serializeUser(user) {
     status: user.status || "active",
     authProvider: user.authProvider,
     passwordUpdatedAt: user.passwordUpdatedAt || null,
+  };
+}
+
+function guestUser() {
+  return {
+    id: "guest",
+    name: "Invitado",
+    email: "invitado.local@example.com",
+    avatar: "",
+    role: "viewer",
+    status: "active",
+    authProvider: "guest",
+    passwordUpdatedAt: null,
   };
 }
 

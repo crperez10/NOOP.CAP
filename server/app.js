@@ -137,6 +137,16 @@ async function seedRequestedAdmin() {
 
 async function loadSessionUser(req, _res, next) {
   try {
+    if (hasGuestCookie(req)) {
+      req.user = guestUser();
+      return next();
+    }
+
+    if (req.session?.guest) {
+      req.user = guestUser();
+      return next();
+    }
+
     if (!req.session?.userId) {
       req.user = null;
       return next();
@@ -148,6 +158,23 @@ async function loadSessionUser(req, _res, next) {
   } catch (error) {
     next(error);
   }
+}
+
+function hasGuestCookie(req) {
+  return String(req.headers.cookie || "").split(";").some((part) => part.trim() === "noop_guest=1");
+}
+
+function guestUser() {
+  return {
+    id: "guest",
+    _id: "guest",
+    name: "Invitado",
+    email: "invitado.local@example.com",
+    avatar: "",
+    role: "viewer",
+    status: "active",
+    authProvider: "guest",
+  };
 }
 
 async function seedStarterClients() {

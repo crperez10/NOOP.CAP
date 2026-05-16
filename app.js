@@ -151,7 +151,7 @@ async function boot() {
 
   let session = { user: null };
   try {
-    session = await api("/api/auth/me", { authOptional: true });
+    session = await api("/auth/me", { authOptional: true });
   } catch (error) {
     els.app.hidden = true;
     els.loginView.hidden = false;
@@ -1240,7 +1240,7 @@ async function openUsersDialog() {
 
 async function loadAdminUsers() {
   if (state.user?.role !== "admin") return [];
-  const data = await api("/api/auth/users", { fresh: true });
+  const data = await api("/auth/users", { fresh: true });
   state.users = data.users;
   updateFilterOptions();
   return data.users;
@@ -1261,7 +1261,7 @@ function openUserEditDialog(user) {
 async function saveEditedUser(event) {
   event.preventDefault();
   try {
-    await api(`/api/auth/users/${els.editUserId.value}`, {
+    await api(`/auth/users/${els.editUserId.value}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1283,7 +1283,7 @@ async function saveEditedUser(event) {
 async function deleteUser(userId) {
   if (!confirm("Eliminar este usuario?")) return;
   try {
-    await api(`/api/auth/users/${userId}`, { method: "DELETE" });
+    await api(`/auth/users/${userId}`, { method: "DELETE" });
     notify("Usuario eliminado.");
     await openUsersDialog();
   } catch (error) {
@@ -1297,7 +1297,7 @@ async function clearUserSessions(userId) {
   if (!confirm(`Cerrar las sesiones activas de ${name} en otras maquinas?`)) return;
 
   try {
-    const data = await api(`/api/auth/users/${userId}/sessions/clear`, { method: "POST" });
+    const data = await api(`/auth/users/${userId}/sessions/clear`, { method: "POST" });
     notify(data.closedSessions ? `Sesiones cerradas: ${data.closedSessions}.` : "No habia sesiones externas activas.");
   } catch (error) {
     notify(error.message);
@@ -1322,7 +1322,7 @@ function switchSettingsTab(tab) {
 async function createNativeUser(event) {
   event.preventDefault();
   try {
-    await api("/api/auth/users", {
+    await api("/auth/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1497,7 +1497,7 @@ async function enterWorkspace(user) {
   syncRoleUI();
 
   try {
-    const session = await api("/api/auth/me", { authOptional: true, fresh: true });
+    const session = await api("/auth/me", { authOptional: true, fresh: true });
     if (session.user) {
       state.user = session.user;
       syncRoleUI();
@@ -1515,18 +1515,18 @@ function roleLabelFor(role) {
 }
 
 async function logout() {
-  await api("/api/auth/logout", { method: "POST" });
+  await api("/auth/logout", { method: "POST" });
   window.location.reload();
 }
 
 async function guestLogin() {
-  const data = await api("/api/auth/guest-login", { method: "POST" });
+  const data = await api("/auth/guest-login", { method: "POST" });
   await enterWorkspace(data.user);
 }
 
 async function nativeLogin(event) {
   event.preventDefault();
-  const data = await api("/api/auth/native-login", {
+  const data = await api("/auth/native-login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -1539,7 +1539,7 @@ async function nativeLogin(event) {
 
 async function loadLoginUsers() {
   try {
-    const data = await api("/api/auth/login-users", { authOptional: true, fresh: true });
+    const data = await api("/auth/login-users", { authOptional: true, fresh: true });
     els.nativeLoginUser.innerHTML = [
       `<option value="">Seleccionar usuario</option>`,
       ...data.users.map((user) => `<option value="${escapeHtml(user.email)}">${escapeHtml(user.name)}</option>`),
@@ -1686,7 +1686,7 @@ async function saveProfile(event) {
   event.preventDefault();
   const formData = new FormData();
   if (els.accountAvatar.files[0]) formData.set("avatar", els.accountAvatar.files[0]);
-  const data = await api("/api/auth/profile", { method: "PATCH", body: formData });
+  const data = await api("/auth/profile", { method: "PATCH", body: formData });
   state.user = data.user;
   syncRoleUI();
   renderAccountContent();
@@ -1702,7 +1702,7 @@ function previewAccountAvatar() {
 
 async function changePassword(event) {
   event.preventDefault();
-  const data = await api("/api/auth/password", {
+  const data = await api("/auth/password", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
