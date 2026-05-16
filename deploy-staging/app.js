@@ -149,7 +149,17 @@ async function boot() {
   bindEvents();
   document.body.classList.toggle("light", localStorage.getItem("theme") === "light");
 
-  const session = await api("/api/auth/me", { authOptional: true });
+  let session = { user: null };
+  try {
+    session = await api("/api/auth/me", { authOptional: true });
+  } catch (error) {
+    els.app.hidden = true;
+    els.loginView.hidden = false;
+    await loadLoginUsers();
+    notify("No se pudo conectar con la API. Intenta nuevamente en unos segundos.");
+    return;
+  }
+
   state.user = session.user;
 
   if (!state.user) {
@@ -1486,10 +1496,14 @@ async function enterWorkspace(user) {
   els.app.hidden = false;
   syncRoleUI();
 
-  const session = await api("/api/auth/me", { authOptional: true, fresh: true });
-  if (session.user) {
-    state.user = session.user;
-    syncRoleUI();
+  try {
+    const session = await api("/api/auth/me", { authOptional: true, fresh: true });
+    if (session.user) {
+      state.user = session.user;
+      syncRoleUI();
+    }
+  } catch (error) {
+    notify("Sesion iniciada, pero no se pudo refrescar el perfil.");
   }
 
   if (state.user?.role === "admin") await loadAdminUsers();

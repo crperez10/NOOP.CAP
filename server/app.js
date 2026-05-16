@@ -33,7 +33,6 @@ async function buildApp() {
   await seedRequestedAdmin();
   await normalizeLegacyItemCategories();
   await seedStarterClients();
-  await ensureNbuSeeded();
 
   const app = express();
   app.set("trust proxy", 1);
@@ -77,6 +76,8 @@ async function buildApp() {
   app.use("/api/nbu", nbuRouter);
   app.use("/uploads", uploadsRouter);
 
+  warmNbuSeed();
+
   app.use((error, _req, res, _next) => {
     console.error(error);
     res.status(error.status || 500).json({
@@ -85,6 +86,13 @@ async function buildApp() {
   });
 
   return app;
+}
+
+function warmNbuSeed() {
+  if (process.env.NBU_AUTO_SEED === "false") return;
+  ensureNbuSeeded().catch((error) => {
+    console.warn("NBU seed skipped:", error.message);
+  });
 }
 
 async function seedRequestedAdmin() {

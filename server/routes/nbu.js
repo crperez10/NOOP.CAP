@@ -1,6 +1,7 @@
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
 import { NbuEntry } from "../models/NbuEntry.js";
+import { ensureNbuSeeded } from "../services/nbuSeed.js";
 
 export const nbuRouter = express.Router();
 
@@ -11,6 +12,8 @@ nbuRouter.get("/", async (req, res) => {
   if (!query) {
     return res.json({ entries: [], total: 0 });
   }
+
+  await ensureNbuSeeded();
 
   const regex = new RegExp(escapeRegExp(query), "i");
   const entries = await NbuEntry.find({
